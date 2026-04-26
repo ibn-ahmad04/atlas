@@ -1,0 +1,19 @@
+# Dossiers de dépendances (Très lourds, on ne les versionne jamais)
+backend/vendor/
+frontend/node_modules/
+
+# Fichiers de configuration sensibles (Contiennent tes accès BD)
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# Fichiers générés par les frameworks
+backend/storage/*.key
+backend/public/storage
+backend/public/hot
+frontend/dist/
+
+# Configuration de ton éditeur (VS Code, Cursor, Antigravity)
+.vscode/
+.idea/
+.DS_Store
