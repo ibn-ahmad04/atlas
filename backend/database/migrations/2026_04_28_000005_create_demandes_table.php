@@ -11,18 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('travel_requests', function (Blueprint $table) {
+        Schema::create('demandes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('traveler_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('voyageur_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('agent_profile_id')->constrained('agent_profiles')->onDelete('cascade');
-            $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->enum('statut', ['en_attente', 'acceptee', 'refusee'])->default('en_attente');
             $table->text('message')->nullable();
-            $table->dateTime('start_time');
-            $table->dateTime('end_time');
+            $table->dateTime('creneau_debut');
+            $table->dateTime('creneau_fin');
             $table->timestamps();
 
-            $table->index('status');
-            $table->index('traveler_id');
+            $table->index('statut');
+            $table->index('voyageur_id');
             $table->index('agent_profile_id');
         });
     }
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('travel_requests');
+        Schema::dropIfExists('demandes');
     }
 };

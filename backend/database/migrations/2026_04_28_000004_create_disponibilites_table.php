@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('availabilities', function (Blueprint $table) {
+        Schema::create('disponibilites', function (Blueprint $table) {
             $table->id();
             $table->foreignId('agent_profile_id')->constrained('agent_profiles')->onDelete('cascade');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->enum('status', ['available', 'busy'])->default('available');
+            $table->date('date_debut');
+            $table->date('date_fin');
+            $table->enum('statut', ['disponible', 'occupe'])->default('disponible');
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('availabilities');
+        Schema::dropIfExists('disponibilites');
     }
 };

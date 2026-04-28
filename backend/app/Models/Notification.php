@@ -14,13 +14,13 @@ class Notification extends Model
         'user_id',
         'type',
         'message',
-        'is_read',
+        'lu',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_read' => 'boolean',
+            'lu' => 'boolean',
         ];
     }
 
