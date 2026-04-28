@@ -17,8 +17,13 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['voyageur', 'agent', 'admin'])->default('voyageur');
             $table->rememberToken();
+            $table->softDeletes();
             $table->timestamps();
+
+            $table->index('email');
+            $table->index('role');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
