@@ -36,13 +36,13 @@ class AgentProfile extends Model
         return $this->hasMany(AgentZone::class);
     }
 
-    public function availabilities(): HasMany
+    public function disponibilites(): HasMany
     {
-        return $this->hasMany(Availability::class);
+        return $this->hasMany(Disponibilite::class);
     }
 
-    public function travelRequests(): HasMany
+    public function demandes(): HasMany
     {
-        return $this->hasMany(TravelRequest::class);
+        return $this->hasMany(Demande::class);
     }
 }

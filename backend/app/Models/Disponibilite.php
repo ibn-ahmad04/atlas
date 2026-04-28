@@ -6,22 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Availability extends Model
+class Disponibilite extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'agent_profile_id',
-        'start_date',
-        'end_date',
-        'status',
+        'date_debut',
+        'date_fin',
+        'statut',
     ];
 
     protected function casts(): array
     {
         return [
-            'start_date' => 'date',
-            'end_date'   => 'date',
+            'date_debut' => 'date',
+            'date_fin'   => 'date',
         ];
     }
 
