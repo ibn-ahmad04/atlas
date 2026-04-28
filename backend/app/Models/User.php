@@ -58,9 +58,9 @@ class User extends Authenticatable
         return $this->hasOne(AgentProfile::class);
     }
 
-    public function demandes(): HasMany
+    public function travelRequests(): HasMany
     {
-        return $this->hasMany(Demande::class, 'voyageur_id');
+        return $this->hasMany(TravelRequest::class, 'traveler_id');
     }
 
     public function notifications(): HasMany
