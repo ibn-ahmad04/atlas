@@ -6,26 +6,35 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Disponibilite extends Model
+class Booking extends Model
 {
     use HasFactory;
 
+    protected $table = 'bookings';
+
     protected $fillable = [
+        'user_id',
         'agent_profile_id',
-        'date_debut',
-        'date_fin',
-        'statut',
+        'status',
+        'message',
+        'slot_start',
+        'slot_end',
     ];
 
     protected function casts(): array
     {
         return [
-            'date_debut' => 'date',
-            'date_fin'   => 'date',
+            'slot_start' => 'datetime',
+            'slot_end'   => 'datetime',
         ];
     }
 
     // ─── Relations ───────────────────────────────────────────────────────────
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function agentProfile(): BelongsTo
     {
