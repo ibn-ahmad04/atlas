@@ -1,38 +1,39 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Resources\UserResource;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes — préfixe global : /api/v1/
+| API Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
 */
 
+// Route existante à garder
+Route::get('/test-connection', function () {
+    return response()->json(['message' => 'Connexion réussie']);
+});
+
+// Route existante mise à jour avec UserResource
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return new UserResource($request->user());
+});
+
 Route::prefix('v1')->group(function () {
-
-    // ── Authentification ─────────────────────────────────────────────────
     Route::prefix('auth')->group(function () {
-
-        // POST /api/v1/auth/register
         Route::post('/register', [AuthController::class, 'register']);
-
-        // POST /api/v1/auth/login
         Route::post('/login', [AuthController::class, 'login']);
 
-        // Routes protégées par Sanctum
         Route::middleware('auth:sanctum')->group(function () {
-
-            // POST /api/v1/auth/logout
             Route::post('/logout', [AuthController::class, 'logout']);
-
-            // GET /api/v1/auth/me
             Route::get('/me', [AuthController::class, 'me']);
         });
     });
-
-    // ── Ressources (à implémenter dans les branches suivantes) ───────────
-    // GET  /api/v1/agents
-    // GET  /api/v1/agents/{id}
-    // POST /api/v1/bookings
 });
