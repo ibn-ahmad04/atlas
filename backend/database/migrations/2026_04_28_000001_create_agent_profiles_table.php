@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->enum('type', ['tourisme', 'religieux', 'affaires']);
             $table->text('bio')->nullable();
-            $table->enum('status', ['en_attente', 'valide', 'refuse'])->default('en_attente');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->softDeletes();
             $table->timestamps();
 

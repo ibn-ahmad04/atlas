@@ -41,8 +41,8 @@ class AgentProfile extends Model
         return $this->hasMany(Availability::class);
     }
 
-    public function travelRequests(): HasMany
+    public function bookings(): HasMany
     {
-        return $this->hasMany(TravelRequest::class);
+        return $this->hasMany(Booking::class);
     }
 }

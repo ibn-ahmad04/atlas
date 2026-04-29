@@ -10,6 +10,8 @@ class Availability extends Model
 {
     use HasFactory;
 
+    protected $table = 'availabilities';
+
     protected $fillable = [
         'agent_profile_id',
         'start_date',

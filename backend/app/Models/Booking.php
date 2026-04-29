@@ -6,32 +6,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class TravelRequest extends Model
+class Booking extends Model
 {
     use HasFactory;
 
+    protected $table = 'bookings';
+
     protected $fillable = [
-        'traveler_id',
+        'user_id',
         'agent_profile_id',
         'status',
         'message',
-        'start_time',
-        'end_time',
+        'slot_start',
+        'slot_end',
     ];
 
     protected function casts(): array
     {
         return [
-            'start_time' => 'datetime',
-            'end_time'   => 'datetime',
+            'slot_start' => 'datetime',
+            'slot_end'   => 'datetime',
         ];
     }
 
     // ─── Relations ───────────────────────────────────────────────────────────
 
-    public function traveler(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'traveler_id');
+        return $this->belongsTo(User::class);
     }
 
     public function agentProfile(): BelongsTo
