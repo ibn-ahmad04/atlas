@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\V1\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,35 +11,28 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
-    // ── Santé du serveur ─────────────────────────────────────────────────
-    Route::get('/', function () {
-        return response()->json([
-            'success' => true,
-            'message' => 'Atlas API v1 is alive',
-            'data'    => null,
-        ]);
-    });
-
     // ── Authentification ─────────────────────────────────────────────────
-    // POST /api/v1/auth/register
-    // POST /api/v1/auth/login
-    // POST /api/v1/auth/logout
-    // → À implémenter dans feature/m1-auth
+    Route::prefix('auth')->group(function () {
 
-    // ── Routes protégées ─────────────────────────────────────────────────
-    Route::middleware('auth:sanctum')->group(function () {
+        // POST /api/v1/auth/register
+        Route::post('/register', [AuthController::class, 'register']);
 
-        Route::get('/user', function (Request $request) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Utilisateur authentifié',
-                'data'    => $request->user(),
-            ]);
+        // POST /api/v1/auth/login
+        Route::post('/login', [AuthController::class, 'login']);
+
+        // Routes protégées par Sanctum
+        Route::middleware('auth:sanctum')->group(function () {
+
+            // POST /api/v1/auth/logout
+            Route::post('/logout', [AuthController::class, 'logout']);
+
+            // GET /api/v1/auth/me
+            Route::get('/me', [AuthController::class, 'me']);
         });
-
-        // GET /api/v1/agents
-        // GET /api/v1/agents/{id}
-        // POST /api/v1/bookings
-        // → À implémenter selon les conventions (voir CONVENTIONS.md)
     });
+
+    // ── Ressources (à implémenter dans les branches suivantes) ───────────
+    // GET  /api/v1/agents
+    // GET  /api/v1/agents/{id}
+    // POST /api/v1/bookings
 });
