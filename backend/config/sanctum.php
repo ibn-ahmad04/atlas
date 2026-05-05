@@ -47,7 +47,7 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => 60 * 24 * 7,  // Changé de null à 60 * 24 * 7 (7 jours)
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +62,7 @@ return [
     |
     */
 
-    'token_prefix' => env('SANCTUM_TOKEN_PREFIX', ''),
+    'token_prefix' => env('SANCTUM_TOKEN_PREFIX', 'atlas_'),
 
     /*
     |--------------------------------------------------------------------------
