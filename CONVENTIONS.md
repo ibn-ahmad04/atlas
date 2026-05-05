@@ -4,6 +4,44 @@
 
 ---
 
+## ⚙️ Stack réelle du projet
+
+| Technologie | Version installée |
+|-------------|------------------|
+| Laravel | 12.x |
+| PHP | 8.3 |
+| React | 19.x |
+| React Router | v7 |
+| Vite | 8.x |
+| Tailwind CSS | v4 |
+| Sanctum | 4.x |
+
+---
+
+## 📋 Noms des modèles et tables (référence obligatoire)
+
+| Concept métier | Modèle Laravel | Table MySQL |
+|----------------|----------------|-------------|
+| Utilisateur | `User` | `users` |
+| Profil agent | `AgentProfile` | `agent_profiles` |
+| Disponibilité | `Availability` | `availabilities` |
+| Demande/Réservation | `Booking` | `bookings` |
+| Notification | `Notification` | `notifications` |
+
+> ⚠️ Ne jamais utiliser "Demande" ou "Disponibilite" dans le code.
+> Les noms officiels sont Booking et Availability.
+
+---
+
+## 🔐 Sécurité — règles Sanctum
+
+- Expiration des tokens : **7 jours** (`60 * 24 * 7` minutes)
+- Préfixe des tokens : `atlas_`
+- Logout : toujours appeler `currentAccessToken()->delete()`
+- Routes protégées : middleware `auth:sanctum` obligatoire
+
+---
+
 ## 🛣️ Routes API
 
 - **Préfixe global** : `/api/v1/`
