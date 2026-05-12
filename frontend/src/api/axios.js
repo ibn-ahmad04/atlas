@@ -1,22 +1,35 @@
-import axios from 'axios';
+import axios from "axios";
 
-const api = axios.create({
-    baseURL: 'http://localhost:8000/api',
-    withCredentials: true, // Autorise l'envoi des cookies de session
-    headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    }
+const instance = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// L'intercepteur de requête
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+// Ajoute automatiquement le token Bearer à chaque requête
+instance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("atlas_token");
     if (token) {
-        // On ajoute le préfixe "Bearer " devant le token
-        config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
-});
+  },
+  (error) => Promise.reject(error)
+);
 
-export default api;
+// Gère les erreurs 401 (token expiré → déconnexion)
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("atlas_token");
+      localStorage.removeItem("atlas_user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default instance;
