@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+  
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  const successMessage = location.state?.message;
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -22,14 +26,14 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      const user = await login(form.email, form.password);
-      if (user.role === "agent") {
-        navigate("/dashboard/agent");
-      } else {
-        navigate("/dashboard/voyageur");
-      }
+      await login(form.email, form.password);
+      navigate("/"); // will redirect to /dashboard via HomeRedirect
     } catch (err) {
-      setError(err.message || "Erreur de connexion.");
+      if (err.response?.status === 401) {
+        setError("Email ou mot de passe incorrect");
+      } else {
+        setError(err.response?.data?.message || err.message || "Erreur de connexion.");
+      }
     } finally {
       setLoading(false);
     }
@@ -50,6 +54,10 @@ export default function LoginPage() {
             <h2 className="text-2xl font-black text-gray-900 mb-1">Bon retour</h2>
             <p className="text-gray-500 text-sm">Connectez-vous a votre compte</p>
           </div>
+
+          {successMessage && (
+            <div className="mb-5 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">{successMessage}</div>
+          )}
 
           {error && (
             <div className="mb-5 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl">{error}</div>

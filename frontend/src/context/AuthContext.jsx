@@ -1,70 +1,75 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "../api/axios";
+import api from "../api/axios";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
 
+  // Au montage : vérifier si le token est valide via /auth/me
   useEffect(() => {
-    const stored = localStorage.getItem("atlas_user");
-    const token = localStorage.getItem("atlas_token");
-    if (stored && token) {
-      setUser(JSON.parse(stored));
-    }
-    setLoading(false);
-  }, []);
+    const verifyToken = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await api.get("/auth/me");
+        setUser(response.data.data);
+      } catch (error) {
+        // Token invalide ou expiré
+        localStorage.removeItem("token");
+        setToken(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verifyToken();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const login = async (email, password) => {
-    // MOCK - remplacer par appel API quand backend prêt
-    const mockUsers = {
-      "voyageur@atlas.com": { id: 1, name: "Jean Dupont", email: "voyageur@atlas.com", role: "voyageur" },
-      "agent@atlas.com":    { id: 2, name: "Julianne Lefebvre", email: "agent@atlas.com", role: "agent" },
-    };
-    const mockUser = mockUsers[email];
-    if (!mockUser) throw new Error("Email ou mot de passe incorrect.");
-    const mockToken = "mock_token_" + mockUser.role;
-    localStorage.setItem("atlas_token", mockToken);
-    localStorage.setItem("atlas_user", JSON.stringify(mockUser));
-    setUser(mockUser);
-    return mockUser;
-    // API REELLE:
-    // const res = await axios.post("/auth/login", { email, password });
-    // if (!res.data.success) throw new Error(res.data.message);
-    // const { token, user } = res.data.data;
-    // localStorage.setItem("atlas_token", token);
-    // localStorage.setItem("atlas_user", JSON.stringify(user));
-    // setUser(user);
-    // return user;
+    const response = await api.post("/auth/login", { email, password });
+    const { token: newToken, user: loggedUser } = response.data.data;
+
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
+    setUser(loggedUser);
+
+    return response;
   };
 
-  const register = async (fullName, email, password, role) => {
-    // MOCK
-    const newUser = { id: Date.now(), name: fullName, email, role };
-    const mockToken = "mock_token_" + role;
-    localStorage.setItem("atlas_token", mockToken);
-    localStorage.setItem("atlas_user", JSON.stringify(newUser));
-    setUser(newUser);
-    return newUser;
-    // API REELLE:
-    // const res = await axios.post("/auth/register", { fullName, email, password, role });
-    // if (!res.data.success) throw new Error(res.data.message);
-    // const { token, user } = res.data.data;
-    // localStorage.setItem("atlas_token", token);
-    // localStorage.setItem("atlas_user", JSON.stringify(user));
-    // setUser(user);
-    // return user;
+  const register = async (formData) => {
+    try {
+      const response = await api.post("/auth/register", formData);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        errors: error.response?.data?.errors || {},
+        message: error.response?.data?.message || "Erreur lors de l'inscription.",
+      };
+    }
   };
 
-  const logout = () => {
-    localStorage.removeItem("atlas_token");
-    localStorage.removeItem("atlas_user");
-    setUser(null);
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // Même si l'appel échoue (réseau, token expiré), on déconnecte localement
+    } finally {
+      localStorage.removeItem("token");
+      setToken(null);
+      setUser(null);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, register, loading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -72,6 +77,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth doit etre utilise dans AuthProvider");
+  if (!ctx) throw new Error("useAuth doit être utilisé dans AuthProvider");
   return ctx;
 }

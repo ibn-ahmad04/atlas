@@ -6,7 +6,6 @@ import RegisterPage        from "./pages/RegisterPage";
 import SearchAgentsPage    from "./pages/SearchAgentsPage";
 import AgentProfilePage    from "./pages/AgentProfilePage";
 import MesDemandesPage     from "./pages/MesDemandesPage";
-import DashboardAgentPage  from "./pages/DashboardAgentPage";
 import DisponibilitePage   from "./pages/DisponibilitePage";
 
 function PrivateRoute({ children }) {
@@ -34,7 +33,7 @@ function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
 
       {/* Protegees */}
-      <Route path="/dashboard"      element={<PrivateRoute><DashboardAgentPage /></PrivateRoute>} />
+      <Route path="/dashboard"      element={<PrivateRoute><div className="p-8">Dashboard (M5)</div></PrivateRoute>} />
       <Route path="/mes-demandes"   element={<PrivateRoute><MesDemandesPage /></PrivateRoute>} />
       <Route path="/agents"         element={<PrivateRoute><SearchAgentsPage /></PrivateRoute>} />
       <Route path="/agents/:id"     element={<PrivateRoute><AgentProfilePage /></PrivateRoute>} />
