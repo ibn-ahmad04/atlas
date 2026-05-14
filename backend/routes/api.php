@@ -1,38 +1,31 @@
 <?php
 
-use App\Http\Controllers\Api\V1\AuthController;
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes — préfixe global : /api/v1/
-|--------------------------------------------------------------------------
-*/
+use App\Http\Controllers\Api\V1\AgentController;
+use App\Http\Controllers\Api\V1\AvailabilityController;
+use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\NotificationController;
 
 Route::prefix('v1')->group(function () {
 
-    // ── Authentification ─────────────────────────────────────────────────
-    Route::prefix('auth')->group(function () {
+    // Routes publiques
+    Route::get('/agents', [AgentController::class, 'index']);
+    Route::get('/agents/{id}', [AgentController::class, 'show']);
+    Route::get('/agents/{agentId}/availabilities', [AvailabilityController::class, 'index']);
 
-        // POST /api/v1/auth/register
-        Route::post('/register', [AuthController::class, 'register']);
+    // Routes protégées
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::put('/agents/profile', [AgentController::class, 'updateProfile']);
 
-        // POST /api/v1/auth/login
-        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/availabilities', [AvailabilityController::class, 'store']);
+        Route::delete('/availabilities/{id}', [AvailabilityController::class, 'destroy']);
 
-        // Routes protégées par Sanctum
-        Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/bookings', [BookingController::class, 'store']);
+        Route::get('/bookings', [BookingController::class, 'index']);
+        Route::patch('/bookings/{id}/accept', [BookingController::class, 'accept']);
+        Route::patch('/bookings/{id}/refuse', [BookingController::class, 'refuse']);
 
-            // POST /api/v1/auth/logout
-            Route::post('/logout', [AuthController::class, 'logout']);
-
-            // GET /api/v1/auth/me
-            Route::get('/me', [AuthController::class, 'me']);
-        });
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     });
-
-    // ── Ressources (à implémenter dans les branches suivantes) ───────────
-    // GET  /api/v1/agents
-    // GET  /api/v1/agents/{id}
-    // POST /api/v1/bookings
 });
