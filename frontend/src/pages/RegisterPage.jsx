@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { register } = useAuth();
+  
   const [role, setRole] = useState("voyageur");
   const [form, setForm] = useState({
-    fullName: "",
+    name: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    password_confirmation: "",
     terms: false,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -20,28 +23,31 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async () => {
-    setError(null);
+    setErrors({});
     if (!form.terms) {
-      setError("Veuillez accepter les conditions d'utilisation.");
+      setErrors({ terms: ["Veuillez accepter les conditions d'utilisation."] });
       return;
     }
-    if (form.password !== form.confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
-      return;
-    }
+    
     setLoading(true);
-    try {
-      // API call placeholder
-      // const res = await axios.post("/auth/register", { ...form, role });
-      // if (res.data.success) navigate("/dashboard");
-      setTimeout(() => {
-        setLoading(false);
-        navigate("/dashboard");
-      }, 1000);
-    } catch (err) {
-      setError(err?.response?.data?.message || "Erreur lors de l'inscription.");
-      setLoading(false);
+    
+    const response = await register({
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      password_confirmation: form.password_confirmation,
+      role: role
+    });
+
+    if (response.success) {
+      navigate("/login", { state: { message: "Inscription réussie, connectez-vous" } });
+    } else {
+      setErrors(response.errors || {});
+      if (response.message && Object.keys(response.errors || {}).length === 0) {
+        setErrors({ general: [response.message] });
+      }
     }
+    setLoading(false);
   };
 
   return (
@@ -83,7 +89,6 @@ export default function RegisterPage() {
                   <stop offset="100%" stopColor="#7c3aed" />
                 </linearGradient>
               </defs>
-              {/* Stylized A with plane */}
               <text x="10" y="90" fontFamily="serif" fontSize="80" fontWeight="900" fill="url(#atlasGrad)" opacity="0.15">A</text>
               <path d="M60 90 L100 20 L140 90 M75 65 L125 65" stroke="url(#atlasGrad)" strokeWidth="5" fill="none" strokeLinecap="round"/>
               <path d="M100 20 L155 45 L145 50 L100 30 Z" fill="url(#atlasGrad)" opacity="0.8"/>
@@ -104,15 +109,16 @@ export default function RegisterPage() {
           </div>
 
           {/* Role Toggle */}
-          <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
+          <div className="flex gap-4 mb-6">
             {["voyageur", "agent"].map((r) => (
               <button
                 key={r}
+                type="button"
                 onClick={() => setRole(r)}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 capitalize ${
+                className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 capitalize border ${
                   role === r
-                    ? "bg-indigo-600 text-white shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200"
+                    : "border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600"
                 }`}
               >
                 {r === "voyageur" ? "Voyageur" : "Agent"}
@@ -120,10 +126,10 @@ export default function RegisterPage() {
             ))}
           </div>
 
-          {/* Error */}
-          {error && (
+          {/* General Error */}
+          {errors.general && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl">
-              {error}
+              {errors.general[0]}
             </div>
           )}
 
@@ -140,13 +146,14 @@ export default function RegisterPage() {
                   </svg>
                 </span>
                 <input
-                  name="fullName"
-                  value={form.fullName}
+                  name="name"
+                  value={form.name}
                   onChange={handleChange}
                   placeholder="Jean Dupont"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className={`w-full pl-10 pr-4 py-3 border ${errors.name ? 'border-red-300' : 'border-gray-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
                 />
               </div>
+              {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name[0]}</p>}
             </div>
 
             {/* Email */}
@@ -165,9 +172,10 @@ export default function RegisterPage() {
                   value={form.email}
                   onChange={handleChange}
                   placeholder="jean@atlas.com"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className={`w-full pl-10 pr-4 py-3 border ${errors.email ? 'border-red-300' : 'border-gray-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
                 />
               </div>
+              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email[0]}</p>}
             </div>
 
             {/* Password row */}
@@ -187,9 +195,10 @@ export default function RegisterPage() {
                     value={form.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className={`w-full pl-10 pr-4 py-3 border ${errors.password ? 'border-red-300' : 'border-gray-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
                   />
                 </div>
+                {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password[0]}</p>}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmation</label>
@@ -201,33 +210,37 @@ export default function RegisterPage() {
                     </svg>
                   </span>
                   <input
-                    name="confirmPassword"
+                    name="password_confirmation"
                     type="password"
-                    value={form.confirmPassword}
+                    value={form.password_confirmation}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    className={`w-full pl-10 pr-4 py-3 border ${errors.password_confirmation ? 'border-red-300' : 'border-gray-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
                   />
                 </div>
+                {errors.password_confirmation && <p className="mt-1 text-xs text-red-600">{errors.password_confirmation[0]}</p>}
               </div>
             </div>
 
             {/* Terms */}
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                name="terms"
-                type="checkbox"
-                checked={form.terms}
-                onChange={handleChange}
-                className="mt-0.5 w-4 h-4 accent-indigo-600 rounded"
-              />
-              <span className="text-xs text-gray-500 leading-relaxed">
-                J'accepte les{" "}
-                <a href="#" className="text-indigo-600 font-medium hover:underline">Conditions d'Utilisation</a>{" "}
-                et la{" "}
-                <a href="#" className="text-indigo-600 font-medium hover:underline">Politique de Confidentialité</a>.
-              </span>
-            </label>
+            <div>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  name="terms"
+                  type="checkbox"
+                  checked={form.terms}
+                  onChange={handleChange}
+                  className="mt-0.5 w-4 h-4 accent-indigo-600 rounded"
+                />
+                <span className="text-xs text-gray-500 leading-relaxed">
+                  J'accepte les{" "}
+                  <a href="#" className="text-indigo-600 font-medium hover:underline">Conditions d'Utilisation</a>{" "}
+                  et la{" "}
+                  <a href="#" className="text-indigo-600 font-medium hover:underline">Politique de Confidentialité</a>.
+                </span>
+              </label>
+              {errors.terms && <p className="mt-1 text-xs text-red-600">{errors.terms[0]}</p>}
+            </div>
 
             {/* Submit */}
             <button
