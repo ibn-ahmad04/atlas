@@ -141,7 +141,22 @@ chore: mise à jour dépendances Laravel
 | **Soft deletes**               | Obligatoire sur `users` et `agent_profiles` (`deleted_at`) |
 | **Clés primaires**             | `id` auto-increment (ou UUID selon décision d'équipe) |
 | **Clés étrangères**            | Nommage : `<table_au_singulier>_id` (ex : `user_id`) |
+ 
+ ## Noms de colonnes — référence officielle
 
+| Table | Colonne | Type |
+|-------|---------|------|
+| availabilities | start_date | DATE |
+| availabilities | end_date | DATE |
+| availabilities | status | ENUM(disponible, occupe) |
+| bookings | user_id | FK->users (le voyageur) |
+| bookings | slot_start | DATETIME |
+| bookings | slot_end | DATETIME |
+| bookings | status | ENUM(en_attente, acceptee, refusee) |
+| notifications | is_read | BOOLEAN |
+
+Les valeurs d'enum restent en français (métier).
+Les noms de colonnes sont en anglais (technique).
 ---
 
 ## ⚙️ Workflow général
