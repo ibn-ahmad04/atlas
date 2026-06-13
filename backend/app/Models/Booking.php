@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Booking extends Model
 {
     use HasFactory;
-
-    protected $table = 'bookings';
 
     protected $fillable = [
         'user_id',
@@ -21,19 +19,9 @@ class Booking extends Model
         'slot_end',
     ];
 
-    protected function casts(): array
+    public function traveler(): BelongsTo
     {
-        return [
-            'slot_start' => 'datetime',
-            'slot_end'   => 'datetime',
-        ];
-    }
-
-    // ─── Relations ───────────────────────────────────────────────────────────
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function agentProfile(): BelongsTo
