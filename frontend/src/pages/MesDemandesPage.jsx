@@ -27,7 +27,7 @@ function StatusBadge({ status }) {
   );
 }
 
-function DemandeCard({ d, role }) {
+function DemandeCard({ d, role, onUpdateStatus }) {
   // If role === "agent", the other party is d.traveler.name.
   // If role === "voyageur", the other party is d.agent_profile.user.name.
   const otherPartyName = role === "agent" 
@@ -57,6 +57,24 @@ function DemandeCard({ d, role }) {
           </span>
         </div>
       </div>
+
+      {/* Actions (Agent uniquement) */}
+      {role === "agent" && d.status === "en_attente" && (
+        <div className="flex flex-col gap-2 flex-shrink-0">
+          <button
+            onClick={() => onUpdateStatus(d.id, "acceptee")}
+            className="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded-xl transition-colors"
+          >
+            Accepter
+          </button>
+          <button
+            onClick={() => onUpdateStatus(d.id, "refusee")}
+            className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold rounded-xl transition-colors"
+          >
+            Refuser
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -71,15 +89,31 @@ export default function MesDemandesPage() {
     const fetchDemandes = async () => {
       try {
         const response = await api.get("/bookings");
-        setDemandes(response.data.data);
+        // Similar to agents, paginate returns an object
+        const items = response.data?.data?.data || [];
+        setDemandes(Array.isArray(items) ? items : []);
       } catch (err) {
         console.error("Erreur chargement bookings", err);
+        setDemandes([]);
       } finally {
         setLoading(false);
       }
     };
     fetchDemandes();
   }, []);
+
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      const endpoint = newStatus === "acceptee" ? "accept" : "refuse";
+      await api.patch(`/bookings/${id}/${endpoint}`);
+      setDemandes((prev) =>
+        prev.map((d) => (d.id === id ? { ...d, status: newStatus } : d))
+      );
+    } catch (err) {
+      console.error("Erreur mise à jour statut", err);
+      alert("Erreur lors de la mise à jour");
+    }
+  };
 
   const filtered = activeTab === "all"
     ? demandes
@@ -136,7 +170,7 @@ export default function MesDemandesPage() {
         ) : (
           <div className="space-y-3">
             {filtered.map((d) => (
-              <DemandeCard key={d.id} d={d} role={user?.role} />
+              <DemandeCard key={d.id} d={d} role={user?.role} onUpdateStatus={handleUpdateStatus} />
             ))}
           </div>
         )}
