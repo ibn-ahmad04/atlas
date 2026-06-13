@@ -1,0 +1,584 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Atlas API",
+        "description": "Documentation interactive de l'API Atlas",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000"
+        }
+    ],
+    "paths": {
+        "/api/v1/agents": {
+            "get": {
+                "tags": [
+                    "Agents"
+                ],
+                "summary": "Liste des agents",
+                "operationId": "7a364e74c7f98ca76cb970a25ac0a2fd",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "language",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "zone",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste paginée des agents"
+                    }
+                }
+            }
+        },
+        "/api/v1/agents/{id}": {
+            "get": {
+                "tags": [
+                    "Agents"
+                ],
+                "summary": "Afficher un agent spécifique",
+                "operationId": "d73d23b6b3e7eb165d29c0e1edc32307",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profil complet de l'agent"
+                    },
+                    "404": {
+                        "description": "Agent non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/v1/agents/profile": {
+            "put": {
+                "tags": [
+                    "Agents"
+                ],
+                "summary": "Mettre à jour le profil agent",
+                "operationId": "1dcec9ab4e64903c3b9897d7b7590685",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "bio": {
+                                        "type": "string",
+                                        "example": "Je suis un agent passionné"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "tourisme",
+                                            "religieux",
+                                            "affaires"
+                                        ]
+                                    },
+                                    "languages": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "zones": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil mis à jour"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Profil agent non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Inscription d'un utilisateur",
+                "operationId": "b9e746d77661fb8df55d0ac63e1ece77",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Jean Dupont"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jean@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "voyageur",
+                                            "agent"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Inscription réussie"
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Connexion d'un utilisateur",
+                "operationId": "a7997e7c1e3bfed64d4e56de82415931",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "jean@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie avec Token"
+                    },
+                    "401": {
+                        "description": "Identifiants invalides"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Déconnexion (Révocation du token)",
+                "operationId": "f6b8957b4c0b25636613a9f0512a8ba9",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie"
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Récupérer l'utilisateur connecté",
+                "operationId": "37d33f0281f67d31d05b4c45eea0143b",
+                "responses": {
+                    "200": {
+                        "description": "Informations de l'utilisateur"
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    }
+                }
+            }
+        },
+        "/api/v1/availabilities/{agentId}": {
+            "get": {
+                "tags": [
+                    "Disponibilités"
+                ],
+                "summary": "Consulter les disponibilités d'un agent",
+                "operationId": "af053bc4ee895b6b1f30302d521ff247",
+                "parameters": [
+                    {
+                        "name": "agentId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des disponibilités"
+                    },
+                    "404": {
+                        "description": "Agent non trouvé"
+                    }
+                }
+            }
+        },
+        "/api/v1/availabilities": {
+            "post": {
+                "tags": [
+                    "Disponibilités"
+                ],
+                "summary": "Ajouter une disponibilité",
+                "operationId": "6b6e8d39c6e72e549fd3ca87123a66ee",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "start_date",
+                                    "end_date"
+                                ],
+                                "properties": {
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-05-01T10:00:00Z"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-05-01T12:00:00Z"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Disponibilité créée"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "422": {
+                        "description": "Chevauchement avec un créneau existant"
+                    }
+                }
+            }
+        },
+        "/api/v1/availabilities/{id}": {
+            "delete": {
+                "tags": [
+                    "Disponibilités"
+                ],
+                "summary": "Supprimer une disponibilité",
+                "operationId": "961702a56c0dae9202acb26c5229676f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Disponibilité supprimée"
+                    },
+                    "403": {
+                        "description": "Action non autorisée"
+                    },
+                    "404": {
+                        "description": "Disponibilité non trouvée"
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings": {
+            "get": {
+                "tags": [
+                    "Réservations"
+                ],
+                "summary": "Liste des réservations de l'utilisateur",
+                "operationId": "2f7e7260c708227e4c44de9d5b59ea36",
+                "responses": {
+                    "200": {
+                        "description": "Liste des réservations"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Réservations"
+                ],
+                "summary": "Demander une réservation",
+                "operationId": "9ec8aa3de0d1efdd0cfe72c27eac745c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "agent_profile_id",
+                                    "slot_start",
+                                    "slot_end"
+                                ],
+                                "properties": {
+                                    "agent_profile_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "slot_start": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-05-01T10:00:00Z"
+                                    },
+                                    "slot_end": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2024-05-01T12:00:00Z"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Je souhaite visiter le centre historique"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Réservation créée"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "422": {
+                        "description": "L'agent n'est pas disponible"
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings/{id}/accept": {
+            "post": {
+                "tags": [
+                    "Réservations"
+                ],
+                "summary": "Accepter une réservation",
+                "operationId": "2b787f856dae74bb7dda53fa693dd3ec",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Réservation acceptée"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Réservation non trouvée"
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings/{id}/refuse": {
+            "post": {
+                "tags": [
+                    "Réservations"
+                ],
+                "summary": "Refuser une réservation",
+                "operationId": "526b92bdcba6139b6fcfd9043abc01ed",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Réservation refusée"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Réservation non trouvée"
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Liste des notifications non lues",
+                "operationId": "cac3bdde44f0be0512f7d05c0a6064e4",
+                "responses": {
+                    "200": {
+                        "description": "Liste des notifications"
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications/{id}/read": {
+            "patch": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Marquer une notification comme lue",
+                "operationId": "8ff3d8f800e2f1640da7d50200bb401f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification lue"
+                    },
+                    "403": {
+                        "description": "Accès refusé"
+                    },
+                    "404": {
+                        "description": "Notification non trouvée"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Agents",
+            "description": "Agents"
+        },
+        {
+            "name": "Authentification",
+            "description": "Authentification"
+        },
+        {
+            "name": "Disponibilités",
+            "description": "Disponibilités"
+        },
+        {
+            "name": "Réservations",
+            "description": "Réservations"
+        },
+        {
+            "name": "Notifications",
+            "description": "Notifications"
+        }
+    ]
+}

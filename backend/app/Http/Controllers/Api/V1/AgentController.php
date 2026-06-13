@@ -5,9 +5,15 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\AgentProfile;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class AgentController extends Controller
 {
+    #[OA\Get(path: "/api/v1/agents", summary: "Liste des agents", tags: ["Agents"])]
+    #[OA\Parameter(name: "type", in: "query", required: false, schema: new OA\Schema(type: "string"))]
+    #[OA\Parameter(name: "language", in: "query", required: false, schema: new OA\Schema(type: "string"))]
+    #[OA\Parameter(name: "zone", in: "query", required: false, schema: new OA\Schema(type: "string"))]
+    #[OA\Response(response: "200", description: "Liste paginée des agents")]
     public function index(Request $request)
     {
         $query = AgentProfile::with(['user', 'languages', 'zones'])
@@ -38,6 +44,10 @@ class AgentController extends Controller
         ]);
     }
 
+    #[OA\Get(path: "/api/v1/agents/{id}", summary: "Afficher un agent spécifique", tags: ["Agents"])]
+    #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
+    #[OA\Response(response: "200", description: "Profil complet de l'agent")]
+    #[OA\Response(response: "404", description: "Agent non trouvé")]
     public function show($id)
     {
         $agent = AgentProfile::with(['user', 'languages', 'zones', 'availabilities'])
@@ -58,6 +68,16 @@ class AgentController extends Controller
         ]);
     }
 
+    #[OA\Put(path: "/api/v1/agents/profile", summary: "Mettre à jour le profil agent", tags: ["Agents"])]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(properties: [
+        new OA\Property(property: "bio", type: "string", example: "Je suis un agent passionné"),
+        new OA\Property(property: "type", type: "string", enum: ["tourisme", "religieux", "affaires"]),
+        new OA\Property(property: "languages", type: "array", items: new OA\Items(type: "string")),
+        new OA\Property(property: "zones", type: "array", items: new OA\Items(type: "string"))
+    ]))]
+    #[OA\Response(response: "200", description: "Profil mis à jour")]
+    #[OA\Response(response: "403", description: "Accès refusé")]
+    #[OA\Response(response: "404", description: "Profil agent non trouvé")]
     public function updateProfile(Request $request)
     {
         if ($request->user()->role !== 'agent') {

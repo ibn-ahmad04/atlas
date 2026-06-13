@@ -6,9 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Availability;
 use App\Models\AgentProfile;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class AvailabilityController extends Controller
 {
+    #[OA\Get(path: "/api/v1/availabilities/{agentId}", summary: "Consulter les disponibilités d'un agent", tags: ["Disponibilités"])]
+    #[OA\Parameter(name: "agentId", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
+    #[OA\Response(response: "200", description: "Liste des disponibilités")]
+    #[OA\Response(response: "404", description: "Agent non trouvé")]
     public function index($agentId)
     {
         $agent = AgentProfile::find($agentId);
@@ -30,6 +35,14 @@ class AvailabilityController extends Controller
         ]);
     }
 
+    #[OA\Post(path: "/api/v1/availabilities", summary: "Ajouter une disponibilité", tags: ["Disponibilités"])]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(required: ["start_date", "end_date"], properties: [
+        new OA\Property(property: "start_date", type: "string", format: "date-time", example: "2024-05-01T10:00:00Z"),
+        new OA\Property(property: "end_date", type: "string", format: "date-time", example: "2024-05-01T12:00:00Z")
+    ]))]
+    #[OA\Response(response: "201", description: "Disponibilité créée")]
+    #[OA\Response(response: "403", description: "Accès refusé")]
+    #[OA\Response(response: "422", description: "Chevauchement avec un créneau existant")]
     public function store(Request $request)
     {
         if ($request->user()->role !== 'agent') {
@@ -82,6 +95,11 @@ class AvailabilityController extends Controller
         ], 201);
     }
 
+    #[OA\Delete(path: "/api/v1/availabilities/{id}", summary: "Supprimer une disponibilité", tags: ["Disponibilités"])]
+    #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
+    #[OA\Response(response: "200", description: "Disponibilité supprimée")]
+    #[OA\Response(response: "403", description: "Action non autorisée")]
+    #[OA\Response(response: "404", description: "Disponibilité non trouvée")]
     public function destroy(Request $request, $id)
     {
         $agentProfile = AgentProfile::where('user_id', $request->user()->id)->first();

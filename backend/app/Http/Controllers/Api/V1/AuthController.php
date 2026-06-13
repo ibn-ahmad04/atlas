@@ -8,11 +8,25 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use OpenApi\Attributes as OA;
 use App\Http\Requests\Api\V1\Auth\RegisterRequest;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 
+#[OA\Info(version: "1.0.0", title: "Atlas API", description: "Documentation interactive de l'API Atlas")]
+#[OA\Server(url: "http://localhost:8000")]
+#[OA\SecurityScheme(securityScheme: "bearerAuth", type: "http", scheme: "bearer")]
 class AuthController extends Controller
 {
+    #[OA\Post(path: "/api/v1/auth/register", summary: "Inscription d'un utilisateur", tags: ["Authentification"])]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(required: ["name", "email", "password", "password_confirmation", "role"], properties: [
+        new OA\Property(property: "name", type: "string", example: "Jean Dupont"),
+        new OA\Property(property: "email", type: "string", format: "email", example: "jean@example.com"),
+        new OA\Property(property: "password", type: "string", format: "password", example: "password123"),
+        new OA\Property(property: "password_confirmation", type: "string", format: "password", example: "password123"),
+        new OA\Property(property: "role", type: "string", enum: ["voyageur", "agent"])
+    ]))]
+    #[OA\Response(response: "201", description: "Inscription réussie")]
+    #[OA\Response(response: "400", description: "Erreur de validation")]
     public function register(RegisterRequest $request)
     {
         try {
@@ -44,6 +58,13 @@ class AuthController extends Controller
         }
     }
 
+    #[OA\Post(path: "/api/v1/auth/login", summary: "Connexion d'un utilisateur", tags: ["Authentification"])]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(required: ["email", "password"], properties: [
+        new OA\Property(property: "email", type: "string", format: "email", example: "jean@example.com"),
+        new OA\Property(property: "password", type: "string", format: "password", example: "password123")
+    ]))]
+    #[OA\Response(response: "200", description: "Connexion réussie avec Token")]
+    #[OA\Response(response: "401", description: "Identifiants invalides")]
     public function login(LoginRequest $request)
     {
         try {
@@ -77,6 +98,9 @@ class AuthController extends Controller
         }
     }
 
+    #[OA\Post(path: "/api/v1/auth/logout", summary: "Déconnexion (Révocation du token)", tags: ["Authentification"])]
+    #[OA\Response(response: "200", description: "Déconnexion réussie")]
+    #[OA\Response(response: "401", description: "Non autorisé")]
     public function logout(Request $request)
     {
         try {
@@ -96,6 +120,9 @@ class AuthController extends Controller
         }
     }
 
+    #[OA\Get(path: "/api/v1/auth/me", summary: "Récupérer l'utilisateur connecté", tags: ["Authentification"])]
+    #[OA\Response(response: "200", description: "Informations de l'utilisateur")]
+    #[OA\Response(response: "401", description: "Non autorisé")]
     public function me(Request $request)
     {
         try {

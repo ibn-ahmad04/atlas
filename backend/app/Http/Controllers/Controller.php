@@ -2,6 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use OpenApi\Annotations as OA;
+
+/**
+ * @OA\Info(
+ *      version="1.0.0",
+ *      title="Atlas API",
+ *      description="Documentation interactive de l'API Atlas"
+ * )
+ *
+ * @OA\SecurityScheme(
+ *      securityScheme="bearerAuth",
+ *      type="http",
+ *      scheme="bearer"
+ * )
+ */
 abstract class Controller
 {
     /**

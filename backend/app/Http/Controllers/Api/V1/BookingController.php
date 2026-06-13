@@ -8,9 +8,20 @@ use App\Models\AgentProfile;
 use App\Models\Availability;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class BookingController extends Controller
 {
+    #[OA\Post(path: "/api/v1/bookings", summary: "Demander une réservation", tags: ["Réservations"])]
+    #[OA\RequestBody(required: true, content: new OA\JsonContent(required: ["agent_profile_id", "slot_start", "slot_end"], properties: [
+        new OA\Property(property: "agent_profile_id", type: "integer", example: 1),
+        new OA\Property(property: "slot_start", type: "string", format: "date-time", example: "2024-05-01T10:00:00Z"),
+        new OA\Property(property: "slot_end", type: "string", format: "date-time", example: "2024-05-01T12:00:00Z"),
+        new OA\Property(property: "message", type: "string", example: "Je souhaite visiter le centre historique")
+    ]))]
+    #[OA\Response(response: "201", description: "Réservation créée")]
+    #[OA\Response(response: "403", description: "Accès refusé")]
+    #[OA\Response(response: "422", description: "L'agent n'est pas disponible")]
     public function store(Request $request)
     {
         if ($request->user()->role !== 'voyageur') {
@@ -67,6 +78,9 @@ class BookingController extends Controller
         ], 201);
     }
 
+    #[OA\Get(path: "/api/v1/bookings", summary: "Liste des réservations de l'utilisateur", tags: ["Réservations"])]
+    #[OA\Response(response: "200", description: "Liste des réservations")]
+    #[OA\Response(response: "403", description: "Accès refusé")]
     public function index(Request $request)
     {
         $user = $request->user();
@@ -105,6 +119,11 @@ class BookingController extends Controller
         ]);
     }
 
+    #[OA\Post(path: "/api/v1/bookings/{id}/accept", summary: "Accepter une réservation", tags: ["Réservations"])]
+    #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
+    #[OA\Response(response: "200", description: "Réservation acceptée")]
+    #[OA\Response(response: "403", description: "Accès refusé")]
+    #[OA\Response(response: "404", description: "Réservation non trouvée")]
     public function accept(Request $request, $id)
     {
         if ($request->user()->role !== 'agent') {
@@ -150,6 +169,11 @@ class BookingController extends Controller
         ]);
     }
 
+    #[OA\Post(path: "/api/v1/bookings/{id}/refuse", summary: "Refuser une réservation", tags: ["Réservations"])]
+    #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
+    #[OA\Response(response: "200", description: "Réservation refusée")]
+    #[OA\Response(response: "403", description: "Accès refusé")]
+    #[OA\Response(response: "404", description: "Réservation non trouvée")]
     public function refuse(Request $request, $id)
     {
         if ($request->user()->role !== 'agent') {
