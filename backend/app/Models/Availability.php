@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Availability extends Model
 {
     use HasFactory;
-
-    protected $table = 'availabilities';
 
     protected $fillable = [
         'agent_profile_id',
@@ -18,16 +16,6 @@ class Availability extends Model
         'end_date',
         'status',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'start_date' => 'date',
-            'end_date'   => 'date',
-        ];
-    }
-
-    // ─── Relations ───────────────────────────────────────────────────────────
 
     public function agentProfile(): BelongsTo
     {
