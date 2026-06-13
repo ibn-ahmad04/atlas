@@ -8,19 +8,15 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
+use App\Http\Requests\Api\V1\Auth\RegisterRequest;
+use App\Http\Requests\Api\V1\Auth\LoginRequest;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
         try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:8|confirmed',
-                'role' => ['required', Rule::in(['voyageur', 'agent'])],
-            ]);
+            $validated = $request->validated();
 
             $user = User::create([
                 'name' => $validated['name'],
@@ -48,13 +44,10 @@ class AuthController extends Controller
         }
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
         try {
-            $validated = $request->validate([
-                'email' => 'required|string|email',
-                'password' => 'required|string',
-            ]);
+            $validated = $request->validated();
 
             if (!Auth::attempt($validated)) {
                 return response()->json([
