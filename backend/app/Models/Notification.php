@@ -17,15 +17,6 @@ class Notification extends Model
         'is_read',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'is_read' => 'boolean',
-        ];
-    }
-
-    // ─── Relations ───────────────────────────────────────────────────────────
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

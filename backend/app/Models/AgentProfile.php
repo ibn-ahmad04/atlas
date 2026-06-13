@@ -19,8 +19,6 @@ class AgentProfile extends Model
         'status',
     ];
 
-    // ─── Relations ───────────────────────────────────────────────────────────
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

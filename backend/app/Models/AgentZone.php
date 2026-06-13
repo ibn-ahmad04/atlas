@@ -15,8 +15,6 @@ class AgentZone extends Model
         'zone',
     ];
 
-    // ─── Relations ───────────────────────────────────────────────────────────
-
     public function agentProfile(): BelongsTo
     {
         return $this->belongsTo(AgentProfile::class);

@@ -15,8 +15,6 @@ class AgentLanguage extends Model
         'language',
     ];
 
-    // ─── Relations ───────────────────────────────────────────────────────────
-
     public function agentProfile(): BelongsTo
     {
         return $this->belongsTo(AgentProfile::class);

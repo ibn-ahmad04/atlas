@@ -10,24 +10,12 @@ class Availability extends Model
 {
     use HasFactory;
 
-    protected $table = 'availabilities';
-
     protected $fillable = [
         'agent_profile_id',
         'start_date',
         'end_date',
         'status',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'start_date' => 'date',
-            'end_date'   => 'date',
-        ];
-    }
-
-    // ─── Relations ───────────────────────────────────────────────────────────
 
     public function agentProfile(): BelongsTo
     {

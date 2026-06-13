@@ -6,24 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('availabilities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('agent_profile_id')->constrained('agent_profiles')->onDelete('cascade');
+            $table->foreignId('agent_profile_id')
+                  ->constrained()->onDelete('cascade');
             $table->date('start_date');
             $table->date('end_date');
-            $table->enum('status', ['available', 'busy'])->default('available');
+            $table->enum('status', ['disponible','occupe'])
+                  ->default('disponible');
             $table->timestamps();
+            $table->index('agent_profile_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('availabilities');
