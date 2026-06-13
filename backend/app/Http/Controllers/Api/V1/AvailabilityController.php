@@ -41,8 +41,8 @@ class AvailabilityController extends Controller
         }
 
         $request->validate([
-            'date_debut' => 'required|date',
-            'date_fin' => 'required|date|after:date_debut',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
         ]);
 
         $agentProfile = AgentProfile::where('user_id', $request->user()->id)->first();
@@ -56,8 +56,8 @@ class AvailabilityController extends Controller
         }
 
         $conflit = Availability::where('agent_profile_id', $agentProfile->id)
-            ->where('date_debut', '<', $request->date_fin)
-            ->where('date_fin', '>', $request->date_debut)
+            ->where('start_date', '<', $request->end_date)
+            ->where('end_date', '>', $request->start_date)
             ->exists();
 
         if ($conflit) {
@@ -70,9 +70,9 @@ class AvailabilityController extends Controller
 
         $availability = Availability::create([
             'agent_profile_id' => $agentProfile->id,
-            'date_debut' => $request->date_debut,
-            'date_fin' => $request->date_fin,
-            'statut' => 'disponible',
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'status' => 'disponible',
         ]);
 
         return response()->json([

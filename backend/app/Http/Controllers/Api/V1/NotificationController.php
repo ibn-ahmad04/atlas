@@ -11,9 +11,8 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $notifications = Notification::where('user_id', $request->user()->id)
-            ->where('lu', false)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->where('is_read', false)
+            ->latest()->get();
 
         return response()->json([
             'success' => true,
@@ -42,7 +41,7 @@ class NotificationController extends Controller
             ], 403);
         }
 
-        $notification->update(['lu' => true]);
+        $notification->update(['is_read' => true]);
 
         return response()->json([
             'success' => true,

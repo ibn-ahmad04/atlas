@@ -10,7 +10,7 @@ class AgentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = AgentProfile::with(['user', 'agentLanguages', 'agentZones'])
+        $query = AgentProfile::with(['user', 'languages', 'zones'])
             ->where('status', 'valide');
 
         if ($request->filled('type')) {
@@ -18,13 +18,13 @@ class AgentController extends Controller
         }
 
         if ($request->filled('language')) {
-            $query->whereHas('agentLanguages', function ($q) use ($request) {
+            $query->whereHas('languages', function ($q) use ($request) {
                 $q->where('language', $request->language);
             });
         }
 
         if ($request->filled('zone')) {
-            $query->whereHas('agentZones', function ($q) use ($request) {
+            $query->whereHas('zones', function ($q) use ($request) {
                 $q->where('zone', $request->zone);
             });
         }
@@ -40,7 +40,7 @@ class AgentController extends Controller
 
     public function show($id)
     {
-        $agent = AgentProfile::with(['user', 'agentLanguages', 'agentZones', 'availabilities'])
+        $agent = AgentProfile::with(['user', 'languages', 'zones', 'availabilities'])
             ->find($id);
 
         if (!$agent) {
@@ -68,48 +68,56 @@ class AgentController extends Controller
             ], 403);
         }
 
-        $agentProfile = AgentProfile::where('user_id', $request->user()->id)->first();
+        try {
+            $agentProfile = AgentProfile::where('user_id', $request->user()->id)->first();
 
-        if (!$agentProfile) {
+            if (!$agentProfile) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Profil agent non trouvé',
+                    'data' => null
+                ], 404);
+            }
+
+            $request->validate([
+                'bio' => 'nullable|string',
+                'type' => 'nullable|string',
+                'languages' => 'nullable|array',
+                'languages.*' => 'string',
+                'zones' => 'nullable|array',
+                'zones.*' => 'string',
+            ]);
+
+            $agentProfile->update([
+                'bio' => $request->bio ?? $agentProfile->bio,
+                'type' => $request->type ?? $agentProfile->type,
+            ]);
+
+            if ($request->filled('languages')) {
+                $agentProfile->languages()->delete();
+                foreach ($request->languages as $lang) {
+                    $agentProfile->languages()->create(['language' => $lang]);
+                }
+            }
+
+            if ($request->filled('zones')) {
+                $agentProfile->zones()->delete();
+                foreach ($request->zones as $zone) {
+                    $agentProfile->zones()->create(['zone' => $zone]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profil mis à jour',
+                'data' => $agentProfile->load(['user', 'languages', 'zones'])
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Profil agent non trouvé',
-                'data' => null
-            ], 404);
+                'message' => 'Erreur serveur',
+                'data'    => null
+            ], 500);
         }
-
-        $request->validate([
-            'bio' => 'nullable|string',
-            'type' => 'nullable|string',
-            'languages' => 'nullable|array',
-            'languages.*' => 'string',
-            'zones' => 'nullable|array',
-            'zones.*' => 'string',
-        ]);
-
-        $agentProfile->update([
-            'bio' => $request->bio ?? $agentProfile->bio,
-            'type' => $request->type ?? $agentProfile->type,
-        ]);
-
-        if ($request->filled('languages')) {
-            $agentProfile->agentLanguages()->delete();
-            foreach ($request->languages as $lang) {
-                $agentProfile->agentLanguages()->create(['language' => $lang]);
-            }
-        }
-
-        if ($request->filled('zones')) {
-            $agentProfile->agentZones()->delete();
-            foreach ($request->zones as $zone) {
-                $agentProfile->agentZones()->create(['zone' => $zone]);
-            }
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Profil mis à jour',
-            'data' => $agentProfile->load(['user', 'agentLanguages', 'agentZones'])
-        ]);
     }
 }

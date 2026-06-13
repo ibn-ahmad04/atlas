@@ -23,15 +23,15 @@ class BookingController extends Controller
 
         $request->validate([
             'agent_profile_id' => 'required|exists:agent_profiles,id',
-            'creneau_debut' => 'required|date',
-            'creneau_fin' => 'required|date|after:creneau_debut',
+            'slot_start' => 'required|date',
+            'slot_end' => 'required|date|after:slot_start',
             'message' => 'nullable|string',
         ]);
 
         $disponible = Availability::where('agent_profile_id', $request->agent_profile_id)
-            ->where('statut', 'disponible')
-            ->where('date_debut', '<=', $request->creneau_debut)
-            ->where('date_fin', '>=', $request->creneau_fin)
+            ->where('status', 'disponible')
+            ->where('start_date', '<=', $request->slot_start)
+            ->where('end_date', '>=', $request->slot_end)
             ->exists();
 
         if (!$disponible) {
@@ -43,21 +43,21 @@ class BookingController extends Controller
         }
 
         $booking = Booking::create([
-            'voyageur_id' => $request->user()->id,
+            'user_id'          => $request->user()->id,
             'agent_profile_id' => $request->agent_profile_id,
-            'statut' => 'en_attente',
-            'message' => $request->message,
-            'creneau_debut' => $request->creneau_debut,
-            'creneau_fin' => $request->creneau_fin,
+            'slot_start'       => $request->slot_start,
+            'slot_end'         => $request->slot_end,
+            'status'           => 'en_attente',
+            'message'          => $request->message,
         ]);
 
         $agentProfile = AgentProfile::find($request->agent_profile_id);
 
         Notification::create([
-            'user_id' => $agentProfile->user_id,
-            'type' => 'new_booking',
-            'message' => 'Vous avez reçu une nouvelle demande',
-            'lu' => false,
+            'user_id'  => $agentProfile->user_id,
+            'type'     => 'new_booking',
+            'message'  => 'Vous avez reçu une nouvelle demande',
+            'is_read'  => false,
         ]);
 
         return response()->json([
@@ -73,8 +73,8 @@ class BookingController extends Controller
 
         if ($user->role === 'voyageur') {
             $bookings = Booking::with(['agentProfile.user'])
-                ->where('voyageur_id', $user->id)
-                ->get();
+                ->where('user_id', $user->id)
+                ->latest()->get();
         } elseif ($user->role === 'agent') {
             $agentProfile = AgentProfile::where('user_id', $user->id)->first();
 
@@ -86,9 +86,10 @@ class BookingController extends Controller
                 ], 404);
             }
 
-            $bookings = Booking::with(['voyageur'])
-                ->where('agent_profile_id', $agentProfile->id)
-                ->get();
+            $bookings = Booking::with(['traveler'])
+                ->whereHas('agentProfile', fn($q) =>
+                    $q->where('user_id', $user->id))
+                ->latest()->get();
         } else {
             return response()->json([
                 'success' => false,
@@ -133,13 +134,13 @@ class BookingController extends Controller
             ], 403);
         }
 
-        $booking->update(['statut' => 'acceptee']);
+        $booking->update(['status' => 'acceptee']);
 
         Notification::create([
-            'user_id' => $booking->voyageur_id,
-            'type' => 'booking_accepted',
-            'message' => 'Votre demande a été acceptée',
-            'lu' => false,
+            'user_id'  => $booking->user_id,
+            'type'     => 'booking_accepted',
+            'message'  => 'Votre demande a été acceptée',
+            'is_read'  => false,
         ]);
 
         return response()->json([
@@ -178,13 +179,13 @@ class BookingController extends Controller
             ], 403);
         }
 
-        $booking->update(['statut' => 'refusee']);
+        $booking->update(['status' => 'refusee']);
 
         Notification::create([
-            'user_id' => $booking->voyageur_id,
-            'type' => 'booking_refused',
-            'message' => 'Votre demande a été refusée',
-            'lu' => false,
+            'user_id'  => $booking->user_id,
+            'type'     => 'booking_refused',
+            'message'  => 'Votre demande a été refusée',
+            'is_read'  => false,
         ]);
 
         return response()->json([
