@@ -143,5 +143,4 @@ export default function MesDemandesPage() {
       </main>
     </AgentLayout>
   );
-}  );
 }

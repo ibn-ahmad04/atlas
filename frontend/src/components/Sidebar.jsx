@@ -1,28 +1,48 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const NAV = [
-  {
-    section: "Principal",
-    items: [
-      { key: "dashboard",     label: "Dashboard",       path: "/dashboard",      icon: "grid",     badge: null },
-      { key: "demandes",      label: "Mes demandes",    path: "/mes-demandes",   icon: "inbox",    badge: 3 },
-    ],
-  },
-  {
-    section: "Mon profil",
-    items: [
-      { key: "profil",        label: "Mon profil",      path: "/agents/1",       icon: "user",     badge: null },
-      { key: "disponibilite", label: "Disponibilite",   path: "/disponibilite",  icon: "calendar", badge: null },
-    ],
-  },
-  {
-    section: "Plateforme",
-    items: [
-      { key: "agents",        label: "Autres agents",   path: "/agents",         icon: "users",    badge: null },
-    ],
-  },
-];
+const getNavForRole = (role) => {
+  if (role === "voyageur") {
+    return [
+      {
+        section: "Plateforme",
+        items: [
+          { key: "agents",        label: "Explorer les agents", path: "/agents",         icon: "users",    badge: null },
+        ],
+      },
+      {
+        section: "Mes réservations",
+        items: [
+          { key: "demandes",      label: "Mes demandes",        path: "/mes-demandes",   icon: "inbox",    badge: null },
+        ],
+      },
+    ];
+  }
+
+  // Default agent nav
+  return [
+    {
+      section: "Principal",
+      items: [
+        { key: "dashboard",     label: "Dashboard",       path: "/dashboard",      icon: "grid",     badge: null },
+        { key: "demandes",      label: "Mes demandes",    path: "/mes-demandes",   icon: "inbox",    badge: 3 },
+      ],
+    },
+    {
+      section: "Mon profil",
+      items: [
+        { key: "profil",        label: "Mon profil",      path: "/agents/1",       icon: "user",     badge: null },
+        { key: "disponibilite", label: "Disponibilite",   path: "/disponibilite",  icon: "calendar", badge: null },
+      ],
+    },
+    {
+      section: "Plateforme",
+      items: [
+        { key: "agents",        label: "Autres agents",   path: "/agents",         icon: "users",    badge: null },
+      ],
+    },
+  ];
+};
 
 function Icon({ type, className = "w-4 h-4" }) {
   const map = {
@@ -125,9 +145,9 @@ export default function Sidebar({ collapsed, setCollapsed }) {
               <span className="text-white font-bold text-sm">{user?.name?.charAt(0) || "A"}</span>
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-gray-900 truncate">{user?.name || "Agent"}</p>
-              <span className="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2 py-0.5 rounded-full">
-                Agent
+              <p className="text-sm font-bold text-gray-900 truncate">{user?.name || "Utilisateur"}</p>
+              <span className="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2 py-0.5 rounded-full capitalize">
+                {user?.role || "Agent"}
               </span>
             </div>
           </div>
@@ -136,7 +156,7 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-5">
-        {NAV.map((group) => (
+        {getNavForRole(user?.role).map((group) => (
           <div key={group.section}>
             {!collapsed && (
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 mb-1.5">

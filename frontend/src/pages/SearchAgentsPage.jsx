@@ -74,9 +74,13 @@ export default function SearchAgentsPage() {
     const fetchAgents = async () => {
       try {
         const response = await api.get("/agents");
-        setAgents(response.data.data);
+        // Laravel's paginate() returns data inside a nested 'data' key
+        // The structure is: response.data (axios) -> .data (our JSON) -> .data (Laravel paginator)
+        const items = response.data?.data?.data || [];
+        setAgents(Array.isArray(items) ? items : []);
       } catch (error) {
         console.error("Erreur chargement agents", error);
+        setAgents([]);
       } finally {
         setLoading(false);
       }
@@ -85,8 +89,10 @@ export default function SearchAgentsPage() {
   }, []);
 
   const filtered = agents.filter((a) => {
-    const nameMatch = a.user?.name?.toLowerCase().includes(search.toLowerCase());
-    const bioMatch = a.bio?.toLowerCase().includes(search.toLowerCase());
+    const name = a.user?.name || "";
+    const bio = a.bio || "";
+    const nameMatch = name.toLowerCase().includes(search.toLowerCase());
+    const bioMatch = bio.toLowerCase().includes(search.toLowerCase());
     return search === "" || nameMatch || bioMatch;
   });
 
@@ -138,7 +144,11 @@ export default function SearchAgentsPage() {
         </div>
 
         {/* Resultats */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">🔍</p>
             <p className="text-gray-400 text-lg font-medium">Aucun agent trouve</p>

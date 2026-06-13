@@ -22,7 +22,8 @@ function HomeRedirect() {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
-  return <Navigate to="/dashboard" replace />;
+  if (user.role === "voyageur") return <Navigate to="/agents" replace />;
+  return <Navigate to="/mes-demandes" replace />;
 }
 
 function AppRoutes() {
