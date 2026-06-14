@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
       try {
         const response = await api.get("/auth/me");
         setUser(response.data.data);
-      } catch (error) {
+      } catch {
         // Token invalide ou expiré
         localStorage.removeItem("token");
         setToken(null);
@@ -30,17 +30,21 @@ export function AuthProvider({ children }) {
     };
 
     verifyToken();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const login = async (email, password) => {
-    const response = await api.post("/auth/login", { email, password });
-    const { token: newToken, user: loggedUser } = response.data.data;
+    setLoading(true);
+    try {
+      const response = await api.post("/auth/login", { email, password });
+      const { token: newToken, user: loggedUser } = response.data.data;
 
-    localStorage.setItem("token", newToken);
-    setToken(newToken);
-    setUser(loggedUser);
-
-    return response;
+      localStorage.setItem("token", newToken);
+      setToken(newToken);
+      setUser(loggedUser);
+      return response;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const register = async (formData) => {
@@ -68,15 +72,26 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateUser = async () => {
+    if (!token) return;
+    try {
+      const response = await api.get("/auth/me");
+      setUser(response.data.data);
+    } catch (error) {
+      console.error("Erreur de rafraîchissement user", error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, register, loading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, register, loading, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
+// eslint-disable-next-line react-refresh/only-export-components
+export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth doit être utilisé dans AuthProvider");
   return ctx;
-}
+};

@@ -8,6 +8,7 @@ import AgentProfilePage    from "./pages/AgentProfilePage";
 import MesDemandesPage     from "./pages/MesDemandesPage";
 import DisponibilitePage   from "./pages/DisponibilitePage";
 import DashboardPage       from "./pages/DashboardPage";
+import SettingsPage        from "./pages/SettingsPage";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -24,7 +25,7 @@ function HomeRedirect() {
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === "voyageur") return <Navigate to="/agents" replace />;
-  return <Navigate to="/mes-demandes" replace />;
+  return <Navigate to="/dashboard" replace />;
 }
 
 function AppRoutes() {
@@ -40,6 +41,7 @@ function AppRoutes() {
       <Route path="/agents"         element={<PrivateRoute><SearchAgentsPage /></PrivateRoute>} />
       <Route path="/agents/:id"     element={<PrivateRoute><AgentProfilePage /></PrivateRoute>} />
       <Route path="/disponibilite"  element={<PrivateRoute><DisponibilitePage /></PrivateRoute>} />
+      <Route path="/settings"       element={<PrivateRoute><SettingsPage /></PrivateRoute>} />
 
       {/* Catch all */}
       <Route path="/"  element={<HomeRedirect />} />

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import AgentLayout from "../components/AgentLayout";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MONTHS = [
-  "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
-  "Juillet", "Aout", "Septembre", "Octobre", "Novembre", "Decembre"
+  "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+  "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
 ];
 const DAYS_LABEL = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -13,17 +14,19 @@ function getDaysInMonth(year, month) {
 
 function getFirstDayOfMonth(year, month) {
   const day = new Date(year, month, 1).getDay();
-  // Lundi = 0
-  return day === 0 ? 6 : day - 1;
+  return day === 0 ? 6 : day - 1; // Lundi = 0
 }
 
+// Order of toggle
+const STATUS_ORDER = ["available", "unavailable", "partial"];
+
 const STATUS = {
-  available:   { bg: "bg-emerald-500", label: "Disponible",    light: "bg-emerald-50 border-emerald-200 text-emerald-700" },
-  unavailable: { bg: "bg-red-400",     label: "Indisponible",  light: "bg-red-50 border-red-200 text-red-600" },
-  partial:     { bg: "bg-amber-400",   label: "Partiel",       light: "bg-amber-50 border-amber-200 text-amber-700" },
+  available:   { bg: "bg-emerald-400", label: "Disponible",   border: "border-emerald-400/50", glow: "shadow-[0_0_15px_rgba(52,211,153,0.3)]" },
+  unavailable: { bg: "bg-red-400",     label: "Indisponible", border: "border-red-400/50",     glow: "shadow-[0_0_15px_rgba(248,113,113,0.3)]" },
+  partial:     { bg: "bg-amber-400",   label: "Partiel",      border: "border-amber-400/50",   glow: "shadow-[0_0_15px_rgba(251,191,36,0.3)]" },
 };
 
-// Mock initial — remplacer par axios.get("/agent/availability")
+// Mock initial
 const INITIAL_BLOCKED = [6, 7, 13, 20, 21, 27, 28];
 const INITIAL_PARTIAL = [3, 10, 17, 24];
 
@@ -37,9 +40,8 @@ export default function DisponibilitePage() {
     INITIAL_PARTIAL.forEach((d)  => { init[d] = "partial"; });
     return init;
   });
-  const [selectedDay, setSelectedDay]   = useState(null);
-  const [saving, setSaving]             = useState(false);
-  const [saved, setSaved]               = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved]   = useState(false);
 
   const daysInMonth  = getDaysInMonth(currentYear, currentMonth);
   const firstDayIdx  = getFirstDayOfMonth(currentYear, currentMonth);
@@ -47,30 +49,31 @@ export default function DisponibilitePage() {
   const prevMonth = () => {
     if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear((y) => y - 1); }
     else setCurrentMonth((m) => m - 1);
-    setSelectedDay(null);
   };
   const nextMonth = () => {
     if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear((y) => y + 1); }
     else setCurrentMonth((m) => m + 1);
-    setSelectedDay(null);
   };
 
-  const toggleDay = (day) => {
-    setSelectedDay(day);
-  };
+  const handleDayClick = useCallback((day) => {
+    setDayStatus(prev => {
+      const currentStatus = prev[day] || "available";
+      const currentIndex = STATUS_ORDER.indexOf(currentStatus);
+      const nextIndex = (currentIndex + 1) % STATUS_ORDER.length;
+      const nextStatus = STATUS_ORDER[nextIndex];
 
-  const setStatus = (day, status) => {
-    setDayStatus((prev) => {
-      const next = { ...prev };
-      if (next[day] === status) delete next[day]; // toggle off
-      else next[day] = status;
-      return next;
+      const newStatusMap = { ...prev };
+      if (nextStatus === "available") {
+        delete newStatusMap[day]; // available is default, saves space
+      } else {
+        newStatusMap[day] = nextStatus;
+      }
+      return newStatusMap;
     });
-  };
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
-    // API: axios.post("/agent/availability", { year: currentYear, month: currentMonth, dayStatus })
     await new Promise((r) => setTimeout(r, 800));
     setSaving(false);
     setSaved(true);
@@ -85,230 +88,192 @@ export default function DisponibilitePage() {
 
   return (
     <AgentLayout>
-      <main className="max-w-4xl mx-auto px-8 py-10">
+      <div className="max-w-5xl mx-auto py-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-black text-gray-900 mb-1">Disponibilite</h1>
-          <p className="text-gray-500">Gerez vos jours disponibles pour recevoir des demandes de voyage.</p>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4"
+        >
+          <div>
+            <h1 className="text-3xl md:text-5xl font-display font-black text-white mb-2 tracking-tight">Mon Calendrier</h1>
+            <p className="text-white/70 text-sm max-w-xl">
+              Cliquez directement sur un jour pour modifier sa disponibilité. Les changements s'appliquent immédiatement en local.
+            </p>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-ak flex items-center justify-center gap-2 relative overflow-hidden min-w-[180px]"
+          >
+            {saving ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                </svg>
+                Enregistrement...
+              </>
+            ) : saved ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Sauvegardé !
+              </>
+            ) : (
+              "Publier le calendrier"
+            )}
+          </button>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Calendrier - 2/3 */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              {/* Nav mois */}
-              <div className="flex items-center justify-between mb-6">
-                <button
-                  onClick={prevMonth}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="m15 18-6-6 6-6"/>
-                  </svg>
-                </button>
-                <h2 className="text-base font-black text-gray-900">
-                  {MONTHS[currentMonth]} {currentYear}
-                </h2>
-                <button
-                  onClick={nextMonth}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="m9 18 6-6-6-6"/>
-                  </svg>
-                </button>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Calendrier Artistique - 3/4 */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="lg:col-span-3 card-ak p-6 md:p-10 relative overflow-hidden"
+          >
+            {/* Soft decorative background glows inside calendar */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-ak-accent/5 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -z-10 -translate-x-1/2 translate-y-1/2" />
 
-              {/* Jours de la semaine */}
-              <div className="grid grid-cols-7 mb-2">
-                {DAYS_LABEL.map((d) => (
-                  <div key={d} className="text-center text-xs font-bold text-gray-400 py-1">{d}</div>
-                ))}
-              </div>
+            {/* Nav mois */}
+            <div className="flex items-center justify-between mb-10">
+              <button
+                onClick={prevMonth}
+                className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all shadow-sm backdrop-blur-md hover:scale-105"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <h2 className="text-3xl font-display font-bold text-white capitalize tracking-tight flex items-center gap-3">
+                {MONTHS[currentMonth]} <span className="text-white/40 font-light">{currentYear}</span>
+              </h2>
+              <button
+                onClick={nextMonth}
+                className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10 transition-all shadow-sm backdrop-blur-md hover:scale-105"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
 
-              {/* Grille des jours */}
-              <div className="grid grid-cols-7 gap-1">
-                {/* Cases vides avant le 1er */}
-                {Array.from({ length: firstDayIdx }).map((_, i) => (
-                  <div key={`empty-${i}`} />
-                ))}
+            {/* Jours de la semaine */}
+            <div className="grid grid-cols-7 mb-4">
+              {DAYS_LABEL.map((d) => (
+                <div key={d} className="text-center text-xs font-bold text-white/40 uppercase tracking-widest">{d}</div>
+              ))}
+            </div>
 
-                {/* Jours du mois */}
+            {/* Grille des jours */}
+            <div className="grid grid-cols-7 gap-3 sm:gap-4">
+              {Array.from({ length: firstDayIdx }).map((_, i) => (
+                <div key={`empty-${i}`} className="h-16 sm:h-20" />
+              ))}
+
+              <AnimatePresence>
                 {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-                  const status = dayStatus[day];
+                  const statusKey = dayStatus[day] || "available";
+                  const s = STATUS[statusKey];
                   const isToday =
                     day === today.getDate() &&
                     currentMonth === today.getMonth() &&
                     currentYear === today.getFullYear();
-                  const isSelected = selectedDay === day;
                   const isPast =
                     new Date(currentYear, currentMonth, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
                   return (
-                    <button
+                    <motion.button
+                      layout
                       key={day}
-                      onClick={() => !isPast && toggleDay(day)}
+                      onClick={() => !isPast && handleDayClick(day)}
                       disabled={isPast}
-                      className={`relative h-10 rounded-xl text-sm font-semibold transition-all flex items-center justify-center ${
+                      whileHover={!isPast ? { scale: 1.05 } : {}}
+                      whileTap={!isPast ? { scale: 0.95 } : {}}
+                      className={`relative h-16 sm:h-20 rounded-2xl flex flex-col items-center justify-center transition-all ${
                         isPast
-                          ? "text-gray-200 cursor-not-allowed"
-                          : isSelected
-                          ? "ring-2 ring-indigo-500 ring-offset-1"
-                          : "hover:ring-2 hover:ring-indigo-300 hover:ring-offset-1"
-                      } ${
-                        status === "unavailable"
-                          ? "bg-red-100 text-red-600"
-                          : status === "partial"
-                          ? "bg-amber-100 text-amber-700"
-                          : isToday
-                          ? "bg-indigo-600 text-white"
-                          : "text-gray-700 hover:bg-indigo-50"
-                      }`}
+                          ? "opacity-30 cursor-not-allowed bg-white/5"
+                          : `bg-white/5 border hover:bg-white/10 backdrop-blur-sm cursor-pointer ${s.border} ${statusKey !== 'available' ? s.glow : ''}`
+                      } ${isToday && statusKey === 'available' ? 'ring-2 ring-ak-accent ring-offset-2 ring-offset-[#071913]' : ''}`}
                     >
-                      {day}
-                      {status && !isPast && (
-                        <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${STATUS[status].bg}`} />
+                      <span className={`text-lg sm:text-xl font-display font-bold ${isPast ? 'text-white/50' : 'text-white'}`}>
+                        {day}
+                      </span>
+                      {!isPast && (
+                        <span className="text-[10px] sm:text-xs font-medium text-white/60 mt-1">
+                          {s.label}
+                        </span>
                       )}
-                    </button>
+                      
+                      {/* Indicator dot */}
+                      {!isPast && statusKey !== "available" && (
+                        <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${s.bg}`} />
+                      )}
+                    </motion.button>
                   );
                 })}
-              </div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
 
-              {/* Legende */}
-              <div className="flex items-center gap-5 mt-5 pt-4 border-t border-gray-100">
+          {/* RIGHT 1/4 - Stats Artistiques */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col gap-6"
+          >
+            {/* Legende Interactive (Visual Only) */}
+            <div className="card-ak p-6">
+              <h3 className="font-display font-bold text-white mb-6">Légende</h3>
+              <div className="space-y-4">
                 {Object.entries(STATUS).map(([key, s]) => (
-                  <div key={key} className="flex items-center gap-1.5">
-                    <span className={`w-2.5 h-2.5 rounded-full ${s.bg}`} />
-                    <span className="text-xs text-gray-500 font-medium">{s.label}</span>
+                  <div key={key} className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full ${s.bg} ${s.glow}`} />
+                    <span className="text-sm font-medium text-white/80">{s.label}</span>
                   </div>
                 ))}
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
-                  <span className="text-xs text-gray-500 font-medium">Aujourd hui</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT 1/3 */}
-          <div className="space-y-4">
-            {/* Stats du mois */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              <h3 className="font-bold text-gray-900 mb-4">Ce mois</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                    <span className="text-sm text-gray-600">Disponible</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-900">{stats.available}j</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                    <span className="text-sm text-gray-600">Indisponible</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-900">{stats.unavailable}j</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                    <span className="text-sm text-gray-600">Partiel</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-900">{stats.partial}j</span>
-                </div>
-              </div>
-
-              {/* Barre de progression */}
-              <div className="mt-4">
-                <div className="flex h-2.5 rounded-full overflow-hidden bg-gray-100">
-                  <div className="bg-emerald-500 transition-all" style={{ width: `${(stats.available / daysInMonth) * 100}%` }} />
-                  <div className="bg-amber-400 transition-all"  style={{ width: `${(stats.partial / daysInMonth) * 100}%` }} />
-                  <div className="bg-red-400 transition-all"    style={{ width: `${(stats.unavailable / daysInMonth) * 100}%` }} />
-                </div>
-                <p className="text-xs text-gray-400 mt-1.5 text-right">
-                  {Math.round((stats.available / daysInMonth) * 100)}% disponible
-                </p>
               </div>
             </div>
 
-            {/* Modifier un jour selectionne */}
-            {selectedDay ? (
-              <div className="bg-white rounded-2xl border border-indigo-200 p-5">
-                <h3 className="font-bold text-gray-900 mb-1">
-                  {selectedDay} {MONTHS[currentMonth]}
-                </h3>
-                <p className="text-xs text-gray-400 mb-4">Choisissez le statut de ce jour</p>
-                <div className="space-y-2">
-                  {Object.entries(STATUS).map(([key, s]) => (
-                    <button
-                      key={key}
-                      onClick={() => setStatus(selectedDay, key)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
-                        dayStatus[selectedDay] === key
-                          ? s.light + " border-current"
-                          : "bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300"
-                      }`}
-                    >
-                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${s.bg}`} />
-                      {s.label}
-                      {dayStatus[selectedDay] === key && (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 ml-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                  {dayStatus[selectedDay] && (
-                    <button
-                      onClick={() => setStatus(selectedDay, dayStatus[selectedDay])}
-                      className="w-full text-xs text-gray-400 hover:text-red-500 transition-colors pt-1"
-                    >
-                      Reinitialiser ce jour
-                    </button>
-                  )}
+            {/* Stats */}
+            <div className="card-ak p-6 flex-1 flex flex-col">
+              <h3 className="font-display font-bold text-white mb-6">Aperçu mensuel</h3>
+              <div className="space-y-6 flex-1">
+                <div>
+                  <div className="flex items-end justify-between mb-2">
+                    <span className="text-sm text-white/60 font-medium">Jours disponibles</span>
+                    <span className="text-2xl font-display font-bold text-emerald-400">{stats.available}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-400" style={{ width: `${(stats.available / daysInMonth) * 100}%` }} />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-end justify-between mb-2">
+                    <span className="text-sm text-white/60 font-medium">Jours indisponibles</span>
+                    <span className="text-2xl font-display font-bold text-red-400">{stats.unavailable}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-400" style={{ width: `${(stats.unavailable / daysInMonth) * 100}%` }} />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-end justify-between mb-2">
+                    <span className="text-sm text-white/60 font-medium">Disponibilité partielle</span>
+                    <span className="text-2xl font-display font-bold text-amber-400">{stats.partial}</span>
+                  </div>
+                  <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full bg-amber-400" style={{ width: `${(stats.partial / daysInMonth) * 100}%` }} />
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className="bg-gray-50 rounded-2xl border border-dashed border-gray-200 p-5 text-center">
-                <p className="text-3xl mb-2">📅</p>
-                <p className="text-sm text-gray-400 font-medium">Cliquez sur un jour pour modifier son statut</p>
-              </div>
-            )}
-
-            {/* Bouton sauvegarder */}
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
-            >
-              {saving ? (
-                <>
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
-                  </svg>
-                  Sauvegarde...
-                </>
-              ) : saved ? (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  Sauvegarde !
-                </>
-              ) : (
-                <>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
-                  </svg>
-                  Sauvegarder les modifications
-                </>
-              )}
-            </button>
-          </div>
+            </div>
+          </motion.div>
         </div>
-      </main>
+      </div>
     </AgentLayout>
   );
 }

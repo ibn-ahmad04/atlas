@@ -1,282 +1,209 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
   
-  const [role, setRole] = useState("voyageur");
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     password_confirmation: "",
-    terms: false,
+    role: "voyageur",
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setErrors({});
-    if (!form.terms) {
-      setErrors({ terms: ["Veuillez accepter les conditions d'utilisation."] });
+    if (form.password !== form.password_confirmation) {
+      setErrors({ password_confirmation: ["Les mots de passe ne correspondent pas."] });
       return;
     }
-    
-    setLoading(true);
-    
-    const response = await register({
-      name: form.name,
-      email: form.email,
-      password: form.password,
-      password_confirmation: form.password_confirmation,
-      role: role
-    });
 
-    if (response.success) {
-      navigate("/login", { state: { message: "Inscription réussie, connectez-vous" } });
-    } else {
-      setErrors(response.errors || {});
-      if (response.message && Object.keys(response.errors || {}).length === 0) {
-        setErrors({ general: [response.message] });
+    setLoading(true);
+    try {
+      await register(form);
+      navigate("/login", { state: { message: "Inscription réussie. Veuillez vous connecter." } });
+    } catch (err) {
+      if (err.response?.status === 422) {
+        setErrors(err.response.data.errors);
+      } else {
+        setErrors({ global: "Une erreur est survenue lors de l'inscription." });
       }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-100">
-      {/* LEFT PANEL */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden">
-        {/* Background blobs */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 to-purple-100" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-200 rounded-full opacity-40 blur-3xl translate-x-1/4 -translate-y-1/4" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-purple-200 rounded-full opacity-40 blur-3xl -translate-x-1/4 translate-y-1/4" />
-
-        <div className="relative z-10">
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-16">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">A</span>
-            </div>
-            <span className="text-indigo-700 font-bold text-xl tracking-wide">Atlas</span>
-          </div>
-
-          {/* Headline */}
-          <h1 className="text-5xl font-black text-gray-900 leading-tight mb-6">
-            Concevez le voyage de{" "}
-            <span className="text-indigo-600">leurs rêves</span>.
-          </h1>
-          <p className="text-gray-600 text-lg leading-relaxed max-w-sm">
-            Rejoignez la plateforme d'élite des architectes du voyage. Accédez à des collections exclusives et gérez vos itinéraires avec une fluidité sans précédent.
-          </p>
-        </div>
-
-        {/* Featured destination card */}
-        <div className="relative z-10 bg-white rounded-2xl p-6 shadow-lg max-w-xs">
-          {/* Atlas logo stylized */}
-          <div className="flex items-center justify-center h-40 mb-3">
-            <svg viewBox="0 0 200 120" className="w-48 h-32">
-              <defs>
-                <linearGradient id="atlasGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6366f1" />
-                  <stop offset="100%" stopColor="#7c3aed" />
-                </linearGradient>
-              </defs>
-              <text x="10" y="90" fontFamily="serif" fontSize="80" fontWeight="900" fill="url(#atlasGrad)" opacity="0.15">A</text>
-              <path d="M60 90 L100 20 L140 90 M75 65 L125 65" stroke="url(#atlasGrad)" strokeWidth="5" fill="none" strokeLinecap="round"/>
-              <path d="M100 20 L155 45 L145 50 L100 30 Z" fill="url(#atlasGrad)" opacity="0.8"/>
-            </svg>
-          </div>
-          <p className="text-center font-bold text-gray-900 tracking-widest text-sm">ATLAS</p>
-          <p className="text-center text-indigo-500 text-xs font-semibold tracking-widest mt-1">DESTINATION EN VEDETTE: MALDIVES</p>
+    <div className="min-h-screen flex relative overflow-hidden">
+      {/* Left side - Hero Image */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0d261a] z-10"></div>
+        <img 
+          src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=1200" 
+          alt="Adventure travel destination" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute bottom-12 left-12 z-20 text-white max-w-lg">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-display text-5xl font-black mb-4 leading-tight tracking-tight"
+          >
+            Votre Prochaine Aventure Commence Ici.
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-white/80 text-lg"
+          >
+            Rejoignez une communauté de voyageurs exigeants et de guides passionnés.
+          </motion.p>
         </div>
       </div>
 
-      {/* RIGHT PANEL - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 lg:p-10">
-          {/* Title */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-black text-gray-900 mb-1">Créer votre compte</h2>
-            <p className="text-gray-500 text-sm">Commencez votre voyage premium aujourd'hui.</p>
-          </div>
-
-          {/* Role Toggle */}
-          <div className="flex gap-4 mb-6">
-            {["voyageur", "agent"].map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRole(r)}
-                className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-200 capitalize border ${
-                  role === r
-                    ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200"
-                    : "border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600"
-                }`}
-              >
-                {r === "voyageur" ? "Voyageur" : "Agent"}
-              </button>
-            ))}
-          </div>
-
-          {/* General Error */}
-          {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl">
-              {errors.general[0]}
+      {/* Right side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative z-20 overflow-y-auto max-h-screen">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-md card-ak p-10 my-auto"
+        >
+          <div className="mb-10 text-center">
+            <div className="w-16 h-16 bg-ak-accent/20 rounded-2xl flex items-center justify-center text-ak-accent mx-auto mb-6 border border-ak-accent/30 shadow-[0_0_15px_rgba(255,150,102,0.2)]">
+               <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5c-1.2 0-2 .8-2 2v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
             </div>
+            <h1 className="font-display text-3xl font-black text-white mb-2 tracking-tight">Rejoindre Atlas</h1>
+            <p className="text-white/60">Création de compte sécurisée</p>
+          </div>
+
+          {errors.global && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm font-medium">{errors.global}</div>
           )}
 
-          {/* Fields */}
-          <div className="space-y-4">
-            {/* Full name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom complet</label>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                </span>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Jean Dupont"
-                  className={`w-full pl-10 pr-4 py-3 border ${errors.name ? 'border-red-300' : 'border-gray-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
-                />
-              </div>
-              {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name[0]}</p>}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-2 gap-4 mb-2 p-1 bg-white/5 rounded-2xl backdrop-blur-md border border-white/10">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, role: "voyageur" })}
+                className={`py-2.5 px-4 text-sm font-bold rounded-xl transition-all ${
+                  form.role === "voyageur" 
+                    ? "bg-white text-gray-900 shadow-md" 
+                    : "text-white/60 hover:text-white"
+                }`}
+              >
+                Voyageur
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, role: "agent" })}
+                className={`py-2.5 px-4 text-sm font-bold rounded-xl transition-all ${
+                  form.role === "agent" 
+                    ? "bg-white text-gray-900 shadow-md" 
+                    : "text-white/60 hover:text-white"
+                }`}
+              >
+                Devenir Agent
+              </button>
             </div>
 
-            {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="2" y="4" width="20" height="16" rx="2"/>
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                  </svg>
-                </span>
-                <input
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="jean@atlas.com"
-                  className={`w-full pl-10 pr-4 py-3 border ${errors.email ? 'border-red-300' : 'border-gray-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
-                />
-              </div>
-              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email[0]}</p>}
+              <label className="block text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Nom complet</label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Jean Dupont"
+                className={`w-full px-4 py-3 bg-white/5 border ${errors.name ? 'border-red-500' : 'border-white/20'} rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-ak-accent focus:ring-1 focus:ring-ak-accent transition-colors backdrop-blur-sm`}
+              />
+              {errors.name && <p className="text-red-400 text-xs mt-1.5 font-medium">{errors.name[0]}</p>}
             </div>
 
-            {/* Password row */}
-            <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Adresse email</label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="vous@exemple.com"
+                className={`w-full px-4 py-3 bg-white/5 border ${errors.email ? 'border-red-500' : 'border-white/20'} rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-ak-accent focus:ring-1 focus:ring-ak-accent transition-colors backdrop-blur-sm`}
+              />
+              {errors.email && <p className="text-red-400 text-xs mt-1.5 font-medium">{errors.email[0]}</p>}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                  </span>
-                  <input
-                    name="password"
-                    type="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    className={`w-full pl-10 pr-4 py-3 border ${errors.password ? 'border-red-300' : 'border-gray-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
-                  />
-                </div>
-                {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password[0]}</p>}
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Mot de passe</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className={`w-full px-4 py-3 bg-white/5 border ${errors.password ? 'border-red-500' : 'border-white/20'} rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-ak-accent focus:ring-1 focus:ring-ak-accent transition-colors backdrop-blur-sm`}
+                />
+                {errors.password && <p className="text-red-400 text-xs mt-1.5 font-medium">{errors.password[0]}</p>}
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmation</label>
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Confirmation</label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                      <polyline points="22 4 12 14.01 9 11.01"/>
-                    </svg>
-                  </span>
                   <input
+                    type={showPassword ? "text" : "password"}
                     name="password_confirmation"
-                    type="password"
                     value={form.password_confirmation}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className={`w-full pl-10 pr-4 py-3 border ${errors.password_confirmation ? 'border-red-300' : 'border-gray-200'} rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
+                    className={`w-full px-4 pr-12 py-3 bg-white/5 border ${errors.password_confirmation ? 'border-red-500' : 'border-white/20'} rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-ak-accent focus:ring-1 focus:ring-ak-accent transition-colors backdrop-blur-sm`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                  >
+                    <span className="text-xs font-bold uppercase tracking-wider">{showPassword ? "Masquer" : "Voir"}</span>
+                  </button>
                 </div>
-                {errors.password_confirmation && <p className="mt-1 text-xs text-red-600">{errors.password_confirmation[0]}</p>}
+                {errors.password_confirmation && <p className="text-red-400 text-xs mt-1.5 font-medium">{errors.password_confirmation[0]}</p>}
               </div>
             </div>
 
-            {/* Terms */}
-            <div>
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  name="terms"
-                  type="checkbox"
-                  checked={form.terms}
-                  onChange={handleChange}
-                  className="mt-0.5 w-4 h-4 accent-indigo-600 rounded"
-                />
-                <span className="text-xs text-gray-500 leading-relaxed">
-                  J'accepte les{" "}
-                  <a href="#" className="text-indigo-600 font-medium hover:underline">Conditions d'Utilisation</a>{" "}
-                  et la{" "}
-                  <a href="#" className="text-indigo-600 font-medium hover:underline">Politique de Confidentialité</a>.
-                </span>
-              </label>
-              {errors.terms && <p className="mt-1 text-xs text-red-600">{errors.terms[0]}</p>}
-            </div>
-
-            {/* Submit */}
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold rounded-xl transition-all duration-200 text-sm shadow-lg shadow-indigo-200 hover:shadow-indigo-300"
+              className="w-full mt-8 btn-ak py-3.5 text-base relative overflow-hidden"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
-                  </svg>
-                  Création en cours...
+                   <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                   Création...
                 </span>
-              ) : "Créer un compte"}
+              ) : "Créer mon compte"}
             </button>
-          </div>
+          </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Déjà membre ?{" "}
-            <Link to="/login" className="text-indigo-600 font-semibold hover:underline">
+          <p className="text-center text-sm text-white/60 mt-8">
+            Déjà inscrit ?{" "}
+            <Link to="/login" className="text-white font-bold hover:text-ak-accent transition-colors">
               Se connecter
             </Link>
           </p>
-        </div>
-      </div>
-
-      {/* Language selector */}
-      <div className="fixed bottom-6 right-6 flex items-center gap-2 text-sm text-gray-500">
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
-          <path d="M2 12h20"/>
-        </svg>
-        Français
+        </motion.div>
       </div>
     </div>
   );

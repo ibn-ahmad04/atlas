@@ -5,6 +5,9 @@ use App\Http\Controllers\Api\V1\AgentController;
 use App\Http\Controllers\Api\V1\AvailabilityController;
 use App\Http\Controllers\Api\V1\BookingController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\AgentVerificationController;
+use App\Http\Controllers\Api\V1\ReviewController;
 
 Route::get('/test-connection', fn() => response()->json([
     'success' => true,
@@ -21,19 +24,22 @@ Route::prefix('v1')->group(function () {
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('/logout',[AuthController::class,'logout']);
             Route::get('/me',    [AuthController::class,'me']);
+            Route::post('/profile/info', [ProfileController::class, 'updateInfo']);
+            Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar']);
+            Route::post('/agents/verify', [AgentVerificationController::class, 'requestVerification']);
         });
     });
 
     // PUBLIC
     Route::get('/agents',     [AgentController::class,'index']);
     Route::get('/agents/{id}',[AgentController::class,'show']);
-    Route::get('/agents/{agentId}/availabilities',
-        [AvailabilityController::class,'index']);
+    Route::get('/agents/{agentId}/availabilities', [AvailabilityController::class,'index']);
+    Route::get('/agents/{agentId}/reviews', [ReviewController::class, 'index']);
 
     // PROTÉGÉES
     Route::middleware('auth:sanctum')->group(function () {
-        Route::put('/agents/profile',
-            [AgentController::class,'updateProfile']);
+        Route::post('/reviews', [ReviewController::class, 'store']);
+        Route::put('/agents/profile', [AgentController::class,'updateProfile']);
         Route::post('/availabilities',
             [AvailabilityController::class,'store']);
         Route::delete('/availabilities/{id}',

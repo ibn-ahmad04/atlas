@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -18,7 +19,8 @@ export default function LoginPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError(null);
     if (!form.email || !form.password) {
       setError("Veuillez remplir tous les champs.");
@@ -40,51 +42,85 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-200">
-            <span className="text-white font-black text-2xl">A</span>
-          </div>
-          <h1 className="text-2xl font-black text-gray-900">Atlas</h1>
+    <div className="min-h-screen flex relative overflow-hidden">
+      {/* Left side - Hero Image */}
+      <div className="hidden lg:block lg:w-1/2 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0d261a] z-10"></div>
+        <img 
+          src="https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&q=80&w=1200" 
+          alt="Luxury travel destination" 
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute bottom-12 left-12 z-20 text-white max-w-lg">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-display text-5xl font-black mb-4 leading-tight tracking-tight"
+          >
+            Vivez l'Inoubliable.
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-white/80 text-lg"
+          >
+            Atlas vous connecte aux meilleurs experts pour des aventures d'exception, conçues sur mesure.
+          </motion.p>
         </div>
+      </div>
 
-        <div className="bg-white rounded-3xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-black text-gray-900 mb-1">Bon retour</h2>
-            <p className="text-gray-500 text-sm">Connectez-vous a votre compte</p>
+      {/* Right side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 relative z-20">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-md card-ak p-10"
+        >
+          <div className="mb-10 text-center">
+            <div className="w-16 h-16 bg-ak-accent/20 rounded-2xl flex items-center justify-center text-ak-accent mx-auto mb-6 border border-ak-accent/30 shadow-[0_0_15px_rgba(255,150,102,0.2)]">
+               <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <h1 className="font-display text-4xl font-black text-white mb-2 tracking-tight">Atlas</h1>
+            <p className="text-white/60">Connectez-vous à votre espace.</p>
           </div>
 
           {successMessage && (
-            <div className="mb-5 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">{successMessage}</div>
+            <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-sm font-medium">{successMessage}</div>
           )}
 
           {error && (
-            <div className="mb-5 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl">{error}</div>
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm font-medium">{error}</div>
           )}
 
-          <div className="mb-5 p-3 bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs rounded-xl">
-            <p className="font-semibold mb-1">Comptes de test :</p>
-            <p>Voyageur : voyageur@atlas.com</p>
-            <p>Agent : agent@atlas.com</p>
-            <p className="text-indigo-400 mt-1">(mot de passe : n importe quoi)</p>
+          <div className="mb-8 p-4 bg-white/5 border border-white/10 text-white/70 text-xs rounded-xl backdrop-blur-sm">
+            <p className="font-semibold mb-2 text-white text-sm">Comptes de test :</p>
+            <p className="mb-1"><span className="opacity-60">Voyageur:</span> voyageur@atlas.com</p>
+            <p className="mb-1"><span className="opacity-60">Agent:</span> agent@example.com</p>
+            <p className="text-white/40 mt-2 italic font-mono">password</p>
           </div>
 
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <label className="block text-xs font-bold text-white/60 uppercase tracking-widest mb-2">Adresse email</label>
               <input
                 name="email"
                 type="email"
                 value={form.email}
                 onChange={handleChange}
                 placeholder="vous@exemple.com"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-ak-accent focus:ring-1 focus:ring-ak-accent transition-colors backdrop-blur-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
+              <div className="flex justify-between mb-2">
+                <label className="block text-xs font-bold text-white/60 uppercase tracking-widest">Mot de passe</label>
+                <button type="button" className="text-xs font-bold text-ak-accent hover:text-white transition-colors">
+                  Oublié ?
+                </button>
+              </div>
               <div className="relative">
                 <input
                   name="password"
@@ -92,32 +128,39 @@ export default function LoginPage() {
                   value={form.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full px-4 pr-11 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  className="w-full px-4 pr-12 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-ak-accent focus:ring-1 focus:ring-ak-accent transition-colors backdrop-blur-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((p) => !p)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
                 >
-                  {showPassword ? "Masquer" : "Voir"}
+                  <span className="text-xs font-bold uppercase tracking-wider">{showPassword ? "Masquer" : "Voir"}</span>
                 </button>
               </div>
             </div>
 
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-semibold rounded-xl transition-all text-sm shadow-lg shadow-indigo-200"
+              className="w-full mt-8 btn-ak py-3.5 text-base relative overflow-hidden"
             >
-              {loading ? "Connexion..." : "Se connecter"}
+              {loading ? (
+                 <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                    Connexion...
+                 </span>
+              ) : "Se connecter"}
             </button>
-          </div>
+          </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Pas encore de compte ?{" "}
-            <Link to="/register" className="text-indigo-600 font-semibold hover:underline">S inscrire</Link>
+          <p className="text-center text-sm text-white/60 mt-8">
+            Vous n'avez pas de compte ?{" "}
+            <Link to="/register" className="text-white font-bold hover:text-ak-accent transition-colors">
+              Créer un compte
+            </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
