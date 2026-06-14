@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\AgentVerificationController;
 use App\Http\Controllers\Api\V1\ReviewController;
+use App\Http\Controllers\Api\V1\AdminController;
 
 Route::get('/test-connection', fn() => response()->json([
     'success' => true,
@@ -56,5 +57,14 @@ Route::prefix('v1')->group(function () {
             [NotificationController::class,'index']);
         Route::patch('/notifications/{id}/read',
             [NotificationController::class,'markAsRead']);
+
+        // ADMIN
+        Route::prefix('admin')->group(function () {
+            Route::get('/stats', [AdminController::class, 'stats']);
+            Route::get('/agents-pending', [AdminController::class, 'pendingAgents']);
+            Route::get('/users', [AdminController::class, 'users']);
+            Route::patch('/agents/{id}/validate', [AdminController::class, 'validateAgent']);
+            Route::patch('/agents/{id}/refuse', [AdminController::class, 'refuseAgent']);
+        });
     });
 });

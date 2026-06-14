@@ -2,6 +2,17 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const getNavForRole = (role) => {
+  if (role === "admin") {
+    return [
+      {
+        section: "Administration",
+        items: [
+          { key: "dashboard", label: "Dashboard Admin", path: "/admin", icon: "grid", badge: null },
+        ],
+      },
+    ];
+  }
+
   if (role === "voyageur") {
     return [
       {

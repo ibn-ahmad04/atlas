@@ -4,6 +4,7 @@ import api from "../api/axios";
 import AgentLayout from "../components/AgentLayout";
 import { motion } from "framer-motion";
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
+import { useAuth } from "../context/AuthContext";
 
 function AgentCard({ agent, index }) {
   const name = agent.user?.name || "Agent sans nom";
@@ -76,6 +77,9 @@ const DESTINATIONS = [
 ];
 
 export default function SearchAgentsPage() {
+  const { user } = useAuth();
+  const isAgent = user?.role === 'agent' || user?.role === 'admin';
+  
   const [search, setSearch] = useState("");
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,6 +105,7 @@ export default function SearchAgentsPage() {
   }, []);
 
   const filtered = agents.filter((a) => {
+    if (isAgent && a.user?.id === user?.id) return false;
     const name = a.user?.name || "";
     const bio = a.bio || "";
     const nameMatch = name.toLowerCase().includes(search.toLowerCase());
@@ -113,174 +118,191 @@ export default function SearchAgentsPage() {
       <div className="max-w-7xl mx-auto px-4 pb-20 pt-10">
         
         {/* Header interactif */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-16 text-center"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-ak-accent/10 text-ak-accent text-sm font-semibold mb-6 border border-ak-accent/20">
-            <span className="w-2 h-2 rounded-full bg-ak-accent animate-pulse" />
-            Le monde à portée de main
-          </div>
-          <h1 className="text-5xl md:text-7xl font-display font-black text-white mb-6 tracking-tight drop-shadow-2xl">
-            Explorez sans limites.
-          </h1>
-          <p className="text-white/80 max-w-2xl mx-auto text-xl font-light">
-            Trouvez le créateur de voyage idéal pour votre prochaine aventure, soutenu par des guides locaux certifiés.
-          </p>
-        </motion.div>
+        {!isAgent ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-16 text-center"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-ak-accent/10 text-ak-accent text-sm font-semibold mb-6 border border-ak-accent/20">
+              <span className="w-2 h-2 rounded-full bg-ak-accent animate-pulse" />
+              Le monde à portée de main
+            </div>
+            <h1 className="text-5xl md:text-7xl font-display font-black text-white mb-6 tracking-tight drop-shadow-2xl">
+              Explorez sans limites.
+            </h1>
+            <p className="text-white/80 max-w-2xl mx-auto text-xl font-light">
+              Trouvez le créateur de voyage idéal pour votre prochaine aventure, soutenu par des guides locaux certifiés.
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12"
+          >
+            <h1 className="text-4xl font-display font-black text-white mb-2 tracking-tight">Réseau des Confrères</h1>
+            <p className="text-white/60">Recherchez et connectez-vous avec d'autres experts de la plateforme Atlas.</p>
+          </motion.div>
+        )}
 
         {/* Section Destinations Vedettes */}
-        <div className="mb-20">
-          <h2 className="text-2xl font-display font-bold text-white mb-8 flex items-center gap-3">
-            Destinations Vedettes
-            <span className="h-px bg-white/20 flex-1 ml-4 hidden sm:block"></span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {DESTINATIONS.map((dest, i) => (
-              <motion.div
-                key={dest.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
-                className="relative h-64 rounded-2xl overflow-hidden group cursor-pointer"
-              >
-                <img src={dest.img} alt={dest.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                <div className="absolute bottom-5 left-5">
-                  <h3 className="text-xl font-bold text-white">{dest.name}</h3>
-                  <p className="text-white/70 text-sm">{dest.count} guides locaux</p>
-                </div>
-              </motion.div>
-            ))}
+        {!isAgent && (
+          <div className="mb-20">
+            <h2 className="text-2xl font-display font-bold text-white mb-8 flex items-center gap-3">
+              Destinations Vedettes
+              <span className="h-px bg-white/20 flex-1 ml-4 hidden sm:block"></span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {DESTINATIONS.map((dest, i) => (
+                <motion.div
+                  key={dest.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="relative h-64 rounded-2xl overflow-hidden group cursor-pointer"
+                >
+                  <img src={dest.img} alt={dest.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                  <div className="absolute bottom-5 left-5">
+                    <h3 className="text-xl font-bold text-white">{dest.name}</h3>
+                    <p className="text-white/70 text-sm">{dest.count} guides locaux</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Section Carte Interactive pour Voyageur */}
-        <div className="mb-20">
-          <div className="card-ak p-8 relative overflow-hidden bg-[#0a192f] border-white/10">
-            {/* Effet lumineux */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-ak-accent/20 blur-[100px] rounded-full pointer-events-none"></div>
-            
-            <div className="relative z-10 flex flex-col gap-8">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="max-w-2xl">
-                  <h2 className="text-3xl font-display font-bold text-white mb-4">Explorez notre réseau d'experts mondiaux</h2>
-                  <p className="text-white/70 leading-relaxed">
-                    De Tokyo à Rio, nos guides certifiés sont prêts à concevoir votre voyage sur-mesure. Naviguez sur la carte interactive pour découvrir où se trouvent nos meilleurs créateurs d'aventure et trouvez l'inspiration pour votre prochaine destination.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setZoom(z => Math.max(z / 1.5, 1))} className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  </button>
-                  <button onClick={() => setZoom(z => Math.min(z * 1.5, 8))} className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  </button>
-                </div>
-              </div>
+        {!isAgent && (
+          <div className="mb-20">
+            <div className="card-ak p-8 relative overflow-hidden bg-[#0a192f] border-white/10">
+              {/* Effet lumineux */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-ak-accent/20 blur-[100px] rounded-full pointer-events-none"></div>
               
-              <div 
-                className="relative w-full h-[400px] lg:h-[550px] bg-black/20 rounded-[2rem] border border-white/10 overflow-hidden cursor-move shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]"
-                onMouseMove={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-                }}
-                onMouseLeave={() => setTooltipInfo(null)}
-              >
-                <ComposableMap
-                  projection="geoMercator"
-                  projectionConfig={{ scale: 140 }}
-                  style={{ width: "100%", height: "100%" }}
-                >
-                  <ZoomableGroup 
-                    zoom={zoom} 
-                    center={center}
-                    onMoveEnd={({ coordinates, zoom: newZoom }) => {
-                      setCenter(coordinates);
-                      setZoom(newZoom);
-                    }}
-                  >
-                    <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
-                      {({ geographies }) =>
-                        geographies.map((geo) => (
-                          <Geography
-                            key={geo.rsmKey}
-                            geography={geo}
-                            fill="rgba(255, 255, 255, 0.05)"
-                            stroke="rgba(255, 255, 255, 0.2)"
-                            strokeWidth={0.5 / zoom}
-                            style={{
-                              default: { outline: "none" },
-                              hover: { fill: "rgba(255, 150, 102, 0.2)", outline: "none", cursor: "pointer" },
-                              pressed: { outline: "none" },
-                            }}
-                            onMouseEnter={() => setTooltipInfo({ isCountry: true, title: geo.properties.name })}
-                            onMouseLeave={() => setTooltipInfo(null)}
-                          />
-                        ))
-                      }
-                    </Geographies>
-                    
-                    {/* Markers mock for Traveler map */}
-                    {[
-                      { coordinates: [139.6917, 35.6895], title: "Japon", color: "#34d399", guides: 24, desc: "Aventure & Culture" },
-                      { coordinates: [2.3522, 48.8566], title: "France", color: "#ff9666", guides: 15, desc: "Histoire & Gastronomie" },
-                      { coordinates: [115.1889, -8.4095], title: "Indonésie", color: "#a78bfa", guides: 32, desc: "Retraite & Plongée" },
-                      { coordinates: [-74.006, 40.7128], title: "États-Unis", color: "#fb923c", guides: 45, desc: "Roadtrips & City Breaks" },
-                      { coordinates: [39.8262, 21.4225], title: "Arabie Saoudite", color: "#10b981", guides: 18, desc: "Voyages Spirituels" }
-                    ].map((marker, idx) => (
-                      <Marker 
-                        key={idx} 
-                        coordinates={marker.coordinates}
-                        onMouseEnter={() => setTooltipInfo(marker)}
-                        onMouseLeave={() => setTooltipInfo(null)}
-                        style={{ default: { outline: "none" }, hover: { outline: "none", cursor: "pointer" }, pressed: { outline: "none" } }}
-                      >
-                        <circle r={5 / zoom} fill={marker.color} />
-                        <circle r={15 / zoom} fill="none" stroke={marker.color} className="animate-ping" style={{ animationDelay: `${idx * 0.5}s`, animationDuration: '3s' }} />
-                      </Marker>
-                    ))}
-                  </ZoomableGroup>
-                </ComposableMap>
-
-                {/* Tooltip */}
-                {tooltipInfo && (
-                  <div 
-                    className="absolute z-50 pointer-events-none bg-[#0a192f]/95 backdrop-blur-xl border border-white/20 p-4 rounded-xl shadow-2xl transition-opacity duration-150 ease-out"
-                    style={{ 
-                      left: Math.min(mousePos.x + 15, document.body.clientWidth - 250), 
-                      top: Math.min(mousePos.y + 15, 500) 
-                    }}
-                  >
-                    {tooltipInfo.isCountry ? (
-                      <div>
-                        <h4 className="text-white font-bold">{tooltipInfo.title || "Territoire"}</h4>
-                        <p className="text-white/50 text-xs mt-1">Pays partenaire Atlas</p>
-                      </div>
-                    ) : (
-                      <div className="min-w-[180px]">
-                        <h4 className="text-white font-bold mb-1">{tooltipInfo.title}</h4>
-                        <p className="text-white/70 text-xs mb-3 font-medium bg-white/10 inline-block px-2 py-0.5 rounded-full">{tooltipInfo.desc}</p>
-                        <div className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-ak-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                          <p className="text-sm font-bold text-white">{tooltipInfo.guides} <span className="font-normal text-white/50 text-xs">guides locaux</span></p>
-                        </div>
-                      </div>
-                    )}
+              <div className="relative z-10 flex flex-col gap-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div className="max-w-2xl">
+                    <h2 className="text-3xl font-display font-bold text-white mb-4">Explorez notre réseau d'experts mondiaux</h2>
+                    <p className="text-white/70 leading-relaxed">
+                      De Tokyo à Rio, nos guides certifiés sont prêts à concevoir votre voyage sur-mesure. Naviguez sur la carte interactive pour découvrir où se trouvent nos meilleurs créateurs d'aventure et trouvez l'inspiration pour votre prochaine destination.
+                    </p>
                   </div>
-                )}
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setZoom(z => Math.max(z / 1.5, 1))} className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                    <button onClick={() => setZoom(z => Math.min(z * 1.5, 8))} className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                  </div>
+                </div>
+                
+                <div 
+                  className="relative w-full h-[400px] lg:h-[550px] bg-black/20 rounded-[2rem] border border-white/10 overflow-hidden cursor-move shadow-[inset_0_0_50px_rgba(0,0,0,0.5)]"
+                  onMouseMove={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                  }}
+                  onMouseLeave={() => setTooltipInfo(null)}
+                >
+                  <ComposableMap
+                    projection="geoMercator"
+                    projectionConfig={{ scale: 140 }}
+                    style={{ width: "100%", height: "100%" }}
+                  >
+                    <ZoomableGroup 
+                      zoom={zoom} 
+                      center={center}
+                      onMoveEnd={({ coordinates, zoom: newZoom }) => {
+                        setCenter(coordinates);
+                        setZoom(newZoom);
+                      }}
+                    >
+                      <Geographies geography="https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json">
+                        {({ geographies }) =>
+                          geographies.map((geo) => (
+                            <Geography
+                              key={geo.rsmKey}
+                              geography={geo}
+                              fill="rgba(255, 255, 255, 0.05)"
+                              stroke="rgba(255, 255, 255, 0.2)"
+                              strokeWidth={0.5 / zoom}
+                              style={{
+                                default: { outline: "none" },
+                                hover: { fill: "rgba(255, 150, 102, 0.2)", outline: "none", cursor: "pointer" },
+                                pressed: { outline: "none" },
+                              }}
+                              onMouseEnter={() => setTooltipInfo({ isCountry: true, title: geo.properties.name })}
+                              onMouseLeave={() => setTooltipInfo(null)}
+                            />
+                          ))
+                        }
+                      </Geographies>
+                      
+                      {/* Markers mock for Traveler map */}
+                      {[
+                        { coordinates: [139.6917, 35.6895], title: "Japon", color: "#34d399", guides: 24, desc: "Aventure & Culture" },
+                        { coordinates: [2.3522, 48.8566], title: "France", color: "#ff9666", guides: 15, desc: "Histoire & Gastronomie" },
+                        { coordinates: [115.1889, -8.4095], title: "Indonésie", color: "#a78bfa", guides: 32, desc: "Retraite & Plongée" },
+                        { coordinates: [-74.006, 40.7128], title: "États-Unis", color: "#fb923c", guides: 45, desc: "Roadtrips & City Breaks" },
+                        { coordinates: [39.8262, 21.4225], title: "Arabie Saoudite", color: "#10b981", guides: 18, desc: "Voyages Spirituels" }
+                      ].map((marker, idx) => (
+                        <Marker 
+                          key={idx} 
+                          coordinates={marker.coordinates}
+                          onMouseEnter={() => setTooltipInfo(marker)}
+                          onMouseLeave={() => setTooltipInfo(null)}
+                          style={{ default: { outline: "none" }, hover: { outline: "none", cursor: "pointer" }, pressed: { outline: "none" } }}
+                        >
+                          <circle r={5 / zoom} fill={marker.color} />
+                          <circle r={15 / zoom} fill="none" stroke={marker.color} className="animate-ping" style={{ animationDelay: `${idx * 0.5}s`, animationDuration: '3s' }} />
+                        </Marker>
+                      ))}
+                    </ZoomableGroup>
+                  </ComposableMap>
+  
+                  {/* Tooltip */}
+                  {tooltipInfo && (
+                    <div 
+                      className="absolute z-50 pointer-events-none bg-[#0a192f]/95 backdrop-blur-xl border border-white/20 p-4 rounded-xl shadow-2xl transition-opacity duration-150 ease-out"
+                      style={{ 
+                        left: Math.min(mousePos.x + 15, document.body.clientWidth - 250), 
+                        top: Math.min(mousePos.y + 15, 500) 
+                      }}
+                    >
+                      {tooltipInfo.isCountry ? (
+                        <div>
+                          <h4 className="text-white font-bold">{tooltipInfo.title || "Territoire"}</h4>
+                          <p className="text-white/50 text-xs mt-1">Pays partenaire Atlas</p>
+                        </div>
+                      ) : (
+                        <div className="min-w-[180px]">
+                          <h4 className="text-white font-bold mb-1">{tooltipInfo.title}</h4>
+                          <p className="text-white/70 text-xs mb-3 font-medium bg-white/10 inline-block px-2 py-0.5 rounded-full">{tooltipInfo.desc}</p>
+                          <div className="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-ak-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <p className="text-sm font-bold text-white">{tooltipInfo.guides} <span className="font-normal text-white/50 text-xs">guides locaux</span></p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Section Top Guides (L'ancien contenu) */}
         <div>
-          <h2 className="text-2xl font-display font-bold text-white mb-8 flex items-center gap-3">
-            Trouvez votre Expert
-            <span className="h-px bg-white/20 flex-1 ml-4 hidden sm:block"></span>
-          </h2>
+          {!isAgent && (
+            <h2 className="text-2xl font-display font-bold text-white mb-8 flex items-center gap-3">
+              Trouvez votre Expert
+              <span className="h-px bg-white/20 flex-1 ml-4 hidden sm:block"></span>
+            </h2>
+          )}
 
           <div className="bg-white/10 rounded-2xl border border-white/10 p-2 mb-10 shadow-sm flex flex-col md:flex-row gap-2">
             <div className="flex-1 relative bg-white/5 rounded-xl overflow-hidden border border-transparent focus-within:border-white/20 transition-colors">
@@ -289,7 +311,7 @@ export default function SearchAgentsPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher par nom ou bio..."
+                placeholder={isAgent ? "Rechercher un confrère..." : "Rechercher par nom ou bio..."}
                 className="w-full bg-transparent pl-12 pr-4 py-4 text-sm font-medium text-white focus:outline-none placeholder:text-white/50"
               />
             </div>
@@ -317,31 +339,33 @@ export default function SearchAgentsPage() {
         </div>
 
         {/* Section SEO enrichie */}
-        <div className="mt-24 mb-10 card-ak p-8 lg:p-12 bg-gradient-to-br from-white/5 to-transparent border-white/5">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-ak-accent/20 flex items-center justify-center text-ak-accent mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        {!isAgent && (
+          <div className="mt-24 mb-10 card-ak p-8 lg:p-12 bg-gradient-to-br from-white/5 to-transparent border-white/5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-ak-accent/20 flex items-center justify-center text-ak-accent mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">Voyages Sur-Mesure</h3>
+                <p className="text-white/60 text-sm leading-relaxed">Confiez la planification de vos vacances à des agents de voyage experts. Chaque itinéraire est personnalisé selon vos passions, votre budget et vos envies d'évasion, pour un séjour véritablement unique.</p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Voyages Sur-Mesure</h3>
-              <p className="text-white/60 text-sm leading-relaxed">Confiez la planification de vos vacances à des agents de voyage experts. Chaque itinéraire est personnalisé selon vos passions, votre budget et vos envies d'évasion, pour un séjour véritablement unique.</p>
-            </div>
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">Expertise Locale</h3>
+                <p className="text-white/60 text-sm leading-relaxed">Nos guides partenaires résident sur place et connaissent les trésors cachés de chaque pays. Profitez d'une immersion totale, loin du tourisme de masse, grâce à leurs conseils avisés et exclusifs.</p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Expertise Locale</h3>
-              <p className="text-white/60 text-sm leading-relaxed">Nos guides partenaires résident sur place et connaissent les trésors cachés de chaque pays. Profitez d'une immersion totale, loin du tourisme de masse, grâce à leurs conseils avisés et exclusifs.</p>
-            </div>
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">Réservation Sécurisée</h3>
+                <p className="text-white/60 text-sm leading-relaxed">Voyagez l'esprit tranquille. Notre plateforme garantit la sécurité de vos transactions et vous offre une assistance 24/7 durant toute la durée de votre séjour organisé via Atlas.</p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Réservation Sécurisée</h3>
-              <p className="text-white/60 text-sm leading-relaxed">Voyagez l'esprit tranquille. Notre plateforme garantit la sécurité de vos transactions et vous offre une assistance 24/7 durant toute la durée de votre séjour organisé via Atlas.</p>
             </div>
           </div>
-        </div>
+        )}
 
       </div>
     </AgentLayout>
