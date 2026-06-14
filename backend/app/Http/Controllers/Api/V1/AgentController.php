@@ -68,7 +68,7 @@ class AgentController extends Controller
         ]);
     }
 
-    #[OA\Put(path: "/api/v1/agents/profile", summary: "Mettre à jour le profil agent", tags: ["Agents"])]
+    #[OA\Put(path: "/api/v1/agents/profile", summary: "Mettre à jour le profil agent", tags: ["Agents"], security: [["bearerAuth" => []]])]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(properties: [
         new OA\Property(property: "bio", type: "string", example: "Je suis un agent passionné"),
         new OA\Property(property: "type", type: "string", enum: ["tourisme", "religieux", "affaires"]),

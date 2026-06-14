@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
 
 class BookingController extends Controller
 {
-    #[OA\Post(path: "/api/v1/bookings", summary: "Demander une réservation", tags: ["Réservations"])]
+    #[OA\Post(path: "/api/v1/bookings", summary: "Demander une réservation", tags: ["Réservations"], security: [["bearerAuth" => []]])]
     #[OA\RequestBody(required: true, content: new OA\JsonContent(required: ["agent_profile_id", "slot_start", "slot_end"], properties: [
         new OA\Property(property: "agent_profile_id", type: "integer", example: 1),
         new OA\Property(property: "slot_start", type: "string", format: "date-time", example: "2024-05-01T10:00:00Z"),
@@ -78,7 +78,7 @@ class BookingController extends Controller
         ], 201);
     }
 
-    #[OA\Get(path: "/api/v1/bookings", summary: "Liste des réservations de l'utilisateur", tags: ["Réservations"])]
+    #[OA\Get(path: "/api/v1/bookings", summary: "Liste des réservations de l'utilisateur", tags: ["Réservations"], security: [["bearerAuth" => []]])]
     #[OA\Response(response: "200", description: "Liste des réservations")]
     #[OA\Response(response: "403", description: "Accès refusé")]
     public function index(Request $request)
@@ -119,7 +119,7 @@ class BookingController extends Controller
         ]);
     }
 
-    #[OA\Post(path: "/api/v1/bookings/{id}/accept", summary: "Accepter une réservation", tags: ["Réservations"])]
+    #[OA\Post(path: "/api/v1/bookings/{id}/accept", summary: "Accepter une réservation", tags: ["Réservations"], security: [["bearerAuth" => []]])]
     #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
     #[OA\Response(response: "200", description: "Réservation acceptée")]
     #[OA\Response(response: "403", description: "Accès refusé")]
@@ -169,7 +169,7 @@ class BookingController extends Controller
         ]);
     }
 
-    #[OA\Post(path: "/api/v1/bookings/{id}/refuse", summary: "Refuser une réservation", tags: ["Réservations"])]
+    #[OA\Post(path: "/api/v1/bookings/{id}/refuse", summary: "Refuser une réservation", tags: ["Réservations"], security: [["bearerAuth" => []]])]
     #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
     #[OA\Response(response: "200", description: "Réservation refusée")]
     #[OA\Response(response: "403", description: "Accès refusé")]

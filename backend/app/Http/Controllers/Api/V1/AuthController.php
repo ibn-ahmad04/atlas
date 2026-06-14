@@ -98,7 +98,7 @@ class AuthController extends Controller
         }
     }
 
-    #[OA\Post(path: "/api/v1/auth/logout", summary: "Déconnexion (Révocation du token)", tags: ["Authentification"])]
+    #[OA\Post(path: "/api/v1/auth/logout", summary: "Déconnexion (Révocation du token)", tags: ["Authentification"], security: [["bearerAuth" => []]])]
     #[OA\Response(response: "200", description: "Déconnexion réussie")]
     #[OA\Response(response: "401", description: "Non autorisé")]
     public function logout(Request $request)
@@ -120,7 +120,7 @@ class AuthController extends Controller
         }
     }
 
-    #[OA\Get(path: "/api/v1/auth/me", summary: "Récupérer l'utilisateur connecté", tags: ["Authentification"])]
+    #[OA\Get(path: "/api/v1/auth/me", summary: "Récupérer l'utilisateur connecté", tags: ["Authentification"], security: [["bearerAuth" => []]])]
     #[OA\Response(response: "200", description: "Informations de l'utilisateur")]
     #[OA\Response(response: "401", description: "Non autorisé")]
     public function me(Request $request)

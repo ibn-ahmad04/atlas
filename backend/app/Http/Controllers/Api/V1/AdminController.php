@@ -7,10 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\AgentProfile;
 use App\Models\User;
 use App\Models\Booking;
+use OpenApi\Attributes as OA;
 
 class AdminController extends Controller
 {
-    // GET /api/v1/admin/stats
+    #[OA\Get(path: "/api/v1/admin/stats", summary: "Statistiques pour le dashboard admin", tags: ["Admin"], security: [["bearerAuth" => []]])]
+    #[OA\Response(response: "200", description: "Statistiques globales")]
+    #[OA\Response(response: "403", description: "Non autorisé")]
     public function stats(Request $request)
     {
         if ($request->user()->role !== 'admin') {
@@ -31,7 +34,9 @@ class AdminController extends Controller
         ]);
     }
 
-    // GET /api/v1/admin/agents-pending
+    #[OA\Get(path: "/api/v1/admin/agents-pending", summary: "Liste des agents en attente de validation", tags: ["Admin"], security: [["bearerAuth" => []]])]
+    #[OA\Response(response: "200", description: "Liste des agents en attente")]
+    #[OA\Response(response: "403", description: "Non autorisé")]
     public function pendingAgents(Request $request)
     {
         if ($request->user()->role !== 'admin') {
@@ -46,7 +51,11 @@ class AdminController extends Controller
         ]);
     }
 
-    // PATCH /api/v1/admin/agents/{id}/validate
+    #[OA\Patch(path: "/api/v1/admin/agents/{id}/validate", summary: "Valider un agent", tags: ["Admin"], security: [["bearerAuth" => []]])]
+    #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
+    #[OA\Response(response: "200", description: "Agent validé")]
+    #[OA\Response(response: "403", description: "Non autorisé")]
+    #[OA\Response(response: "404", description: "Agent non trouvé")]
     public function validateAgent(Request $request, $id)
     {
         if ($request->user()->role !== 'admin') {
@@ -62,7 +71,11 @@ class AdminController extends Controller
         ]);
     }
 
-    // PATCH /api/v1/admin/agents/{id}/refuse
+    #[OA\Patch(path: "/api/v1/admin/agents/{id}/refuse", summary: "Refuser un agent", tags: ["Admin"], security: [["bearerAuth" => []]])]
+    #[OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))]
+    #[OA\Response(response: "200", description: "Agent refusé")]
+    #[OA\Response(response: "403", description: "Non autorisé")]
+    #[OA\Response(response: "404", description: "Agent non trouvé")]
     public function refuseAgent(Request $request, $id)
     {
         if ($request->user()->role !== 'admin') {
@@ -78,7 +91,9 @@ class AdminController extends Controller
         ]);
     }
 
-    // GET /api/v1/admin/users
+    #[OA\Get(path: "/api/v1/admin/users", summary: "Liste de tous les utilisateurs", tags: ["Admin"], security: [["bearerAuth" => []]])]
+    #[OA\Response(response: "200", description: "Liste des utilisateurs")]
+    #[OA\Response(response: "403", description: "Non autorisé")]
     public function users(Request $request)
     {
         if ($request->user()->role !== 'admin') {

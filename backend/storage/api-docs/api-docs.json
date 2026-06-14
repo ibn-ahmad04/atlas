@@ -11,6 +11,142 @@
         }
     ],
     "paths": {
+        "/api/v1/admin/stats": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Statistiques pour le dashboard admin",
+                "operationId": "1b017bd97609be9071414eda98a480b1",
+                "responses": {
+                    "200": {
+                        "description": "Statistiques globales"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/agents-pending": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Liste des agents en attente de validation",
+                "operationId": "2d3bdf6cb7c9bac1087dd4c277806425",
+                "responses": {
+                    "200": {
+                        "description": "Liste des agents en attente"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/agents/{id}/validate": {
+            "patch": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Valider un agent",
+                "operationId": "584952d5b40a3dec93de4af9f260d9fb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Agent validé"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    },
+                    "404": {
+                        "description": "Agent non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/agents/{id}/refuse": {
+            "patch": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Refuser un agent",
+                "operationId": "01f49dc340e2fc53a4f810815789e0fa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Agent refusé"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    },
+                    "404": {
+                        "description": "Agent non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/admin/users": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Liste de tous les utilisateurs",
+                "operationId": "af5d5774c7b44662568afbb48fe67f37",
+                "responses": {
+                    "200": {
+                        "description": "Liste des utilisateurs"
+                    },
+                    "403": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/agents": {
             "get": {
                 "tags": [
@@ -131,7 +267,12 @@
                     "404": {
                         "description": "Profil agent non trouvé"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/auth/register": {
@@ -253,7 +394,12 @@
                     "401": {
                         "description": "Non autorisé"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/auth/me": {
@@ -270,7 +416,12 @@
                     "401": {
                         "description": "Non autorisé"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/availabilities/{agentId}": {
@@ -390,7 +541,12 @@
                     "403": {
                         "description": "Accès refusé"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
@@ -443,7 +599,12 @@
                     "422": {
                         "description": "L'agent n'est pas disponible"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/bookings/{id}/accept": {
@@ -473,7 +634,12 @@
                     "404": {
                         "description": "Réservation non trouvée"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/bookings/{id}/refuse": {
@@ -503,7 +669,12 @@
                     "404": {
                         "description": "Réservation non trouvée"
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/notifications": {
@@ -549,6 +720,61 @@
                     }
                 }
             }
+        },
+        "/api/v1/profile/info": {
+            "post": {
+                "tags": [
+                    "Profil"
+                ],
+                "summary": "Mettre à jour les informations du profil",
+                "operationId": "577cda5da54973fc614240df9f17d904",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Informations mises à jour"
+                    }
+                }
+            }
+        },
+        "/api/v1/profile/avatar": {
+            "post": {
+                "tags": [
+                    "Profil"
+                ],
+                "summary": "Mettre à jour l'avatar",
+                "operationId": "b67e208bcaefaa8d266a90398752d0c6",
+                "responses": {
+                    "200": {
+                        "description": "Avatar mis à jour"
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -560,6 +786,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Admin",
+            "description": "Admin"
+        },
         {
             "name": "Agents",
             "description": "Agents"
@@ -579,6 +809,10 @@
         {
             "name": "Notifications",
             "description": "Notifications"
+        },
+        {
+            "name": "Profil",
+            "description": "Profil"
         }
     ]
 }
