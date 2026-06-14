@@ -95,7 +95,7 @@ export default function SearchAgentsPage() {
         const items = response.data?.data?.data || [];
         setAgents(Array.isArray(items) ? items : []);
       } catch (error) {
-        console.error("Erreur chargement agents", error);
+        
         setAgents([]);
       } finally {
         setLoading(false);

@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
       const response = await api.get("/auth/me");
       setUser(response.data.data);
     } catch (error) {
-      console.error("Erreur de rafraîchissement user", error);
+      
     }
   };
 

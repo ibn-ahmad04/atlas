@@ -101,7 +101,7 @@ export default function MesDemandesPage() {
         const items = response.data?.data?.data || [];
         setDemandes(Array.isArray(items) ? items : []);
       } catch (err) {
-        console.error("Erreur chargement bookings", err);
+        
         setDemandes([]);
       } finally {
         setLoading(false);
@@ -118,7 +118,7 @@ export default function MesDemandesPage() {
         prev.map((d) => (d.id === id ? { ...d, status: newStatus } : d))
       );
     } catch (err) {
-      console.error("Erreur mise à jour statut", err);
+      
       alert("Erreur lors de la mise à jour");
     }
   };

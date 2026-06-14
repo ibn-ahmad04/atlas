@@ -62,7 +62,7 @@ export default function DashboardPage() {
           refused: bookings.filter(b => b.status === "refusee").length,
         });
       } catch (err) {
-        console.error("Erreur chargement stats", err);
+        
       }
     };
     fetchStats();

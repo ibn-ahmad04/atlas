@@ -80,7 +80,7 @@ export default function SettingsPage() {
       setSuccessMsg("Photo de profil mise à jour.");
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err) {
-      console.error(err);
+      
       setErrorMsg("Erreur lors de l'upload de l'image.");
       setTimeout(() => setErrorMsg(""), 3000);
     } finally {
