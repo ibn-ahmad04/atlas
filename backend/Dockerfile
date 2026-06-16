@@ -41,7 +41,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 # Rendre le script de démarrage exécutable et forcer les retours à la ligne Unix
 COPY start.sh /usr/local/bin/start.sh
-RUN apt-get install -y dos2unix && dos2unix /usr/local/bin/start.sh
+RUN sed -i 's/\r$//' /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
 CMD ["/usr/local/bin/start.sh"]
