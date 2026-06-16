@@ -28,6 +28,9 @@ export default function SettingsPage() {
   });
 
   const [destinations, setDestinations] = useState([]);
+  const [availabilities, setAvailabilities] = useState([]);
+  const [newAvailStart, setNewAvailStart] = useState("");
+  const [newAvailEnd, setNewAvailEnd] = useState("");
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -40,6 +43,14 @@ export default function SettingsPage() {
       setDestinations(res.data?.data || []);
     }).catch(err => console.error(err));
   }, []);
+
+  useEffect(() => {
+    if (user && user.role === 'agent' && user.agent_profile?.id) {
+      api.get(`/agents/${user.agent_profile.id}/availabilities`).then(res => {
+        setAvailabilities(res.data?.data || []);
+      }).catch(err => console.error(err));
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -366,6 +377,68 @@ export default function SettingsPage() {
                         ))}
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-6 border-t border-white/10">
+                  <h3 className="text-lg font-medium text-white mb-4">Vos créneaux de disponibilité</h3>
+                  
+                  {/* Ajouter une dispo */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div>
+                      <label className="block text-xs font-medium text-white/70 mb-1">Date de début</label>
+                      <input
+                        type="date"
+                        value={newAvailStart}
+                        onChange={(e) => setNewAvailStart(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-ak-accent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-white/70 mb-1">Date de fin</label>
+                      <input
+                        type="date"
+                        value={newAvailEnd}
+                        onChange={(e) => setNewAvailEnd(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-ak-accent"
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        type="button"
+                        onClick={handleAddAvailability}
+                        disabled={loading || !newAvailStart || !newAvailEnd}
+                        className="w-full py-2.5 bg-ak-accent text-black font-bold text-sm rounded-xl disabled:opacity-50"
+                      >
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Liste des dispos */}
+                  <div className="space-y-3">
+                    {availabilities.length > 0 ? (
+                      availabilities.map(slot => (
+                        <div key={slot.id} className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-4">
+                          <div>
+                            <p className="text-sm text-emerald-400 font-bold mb-0.5">
+                              Du {new Date(slot.start_date).toLocaleDateString('fr-FR')} au {new Date(slot.end_date).toLocaleDateString('fr-FR')}
+                            </p>
+                            <p className="text-xs text-white/50 uppercase tracking-widest">{slot.status}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteAvailability(slot.id)}
+                            className="text-red-400 hover:text-red-300 p-2 bg-red-400/10 rounded-lg transition-colors"
+                            title="Supprimer"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-white/50 italic">Aucun créneau de disponibilité renseigné.</p>
+                    )}
                   </div>
                 </div>
               )}
