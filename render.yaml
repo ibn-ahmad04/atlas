@@ -8,12 +8,10 @@ databases:
 services:
   - type: web
     name: atlas-backend
-    env: php
+    env: docker
     plan: free
     region: frankfurt
     rootDir: backend
-    buildCommand: "./render-build.sh"
-    startCommand: "apache2-foreground"
     envVars:
       - key: APP_ENV
         value: production
