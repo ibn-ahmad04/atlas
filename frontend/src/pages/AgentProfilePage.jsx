@@ -150,12 +150,12 @@ export default function AgentProfilePage() {
   
   // Images
   const heroImage = agent.user?.cover
-    ? (agent.user.cover.startsWith('http') ? agent.user.cover : `http://localhost:8000/storage/${agent.user.cover}`)
+    ? (agent.user.cover.startsWith('http') ? agent.user.cover : `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/storage/${agent.user.cover}`)
     : `https://images.unsplash.com/photo-1542314831-c6a4d142481f?auto=format&fit=crop&q=80&w=2000`;
   const avatarId = agent.id * 7;
   const fallbackAvatar = `https://images.unsplash.com/photo-${1500000000000 + avatarId}?w=400&h=400&fit=crop&q=80`;
   const avatarImage = agent.user?.avatar 
-    ? (agent.user.avatar.startsWith('http') ? agent.user.avatar : `http://localhost:8000/storage/${agent.user.avatar}`) 
+    ? (agent.user.avatar.startsWith('http') ? agent.user.avatar : `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/storage/${agent.user.avatar}`) 
     : fallbackAvatar;
 
   return (
@@ -394,7 +394,7 @@ export default function AgentProfilePage() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-white/20 overflow-hidden">
                             {review.user?.avatar ? (
-                              <img src={review.user.avatar.startsWith('http') ? review.user.avatar : `http://localhost:8000/storage/${review.user.avatar}`} alt={review.user.name} className="w-full h-full object-cover" />
+                              <img src={review.user.avatar.startsWith('http') ? review.user.avatar : `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/storage/${review.user.avatar}`} alt={review.user.name} className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-white font-bold">{review.user?.name?.charAt(0)}</div>
                             )}

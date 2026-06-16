@@ -62,10 +62,10 @@ export default function SettingsPage() {
         price_per_hour: user.agent_profile?.price_per_hour || "",
       }));
       if (user.avatar) {
-        setAvatarPreview(`http://localhost:8000/storage/${user.avatar}`);
+        setAvatarPreview(`${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/storage/${user.avatar}`);
       }
       if (user.cover) {
-        setCoverPreview(`http://localhost:8000/storage/${user.cover}`);
+        setCoverPreview(`${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/storage/${user.cover}`);
       }
     }
   }, [user]);

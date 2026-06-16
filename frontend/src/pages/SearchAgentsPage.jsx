@@ -20,7 +20,7 @@ function AgentCard({ agent, index }) {
     "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop",
   ];
   const photoUrl = agent.user?.avatar 
-    ? (agent.user.avatar.startsWith('http') ? agent.user.avatar : `http://localhost:8000/storage/${agent.user.avatar}`)
+    ? (agent.user.avatar.startsWith('http') ? agent.user.avatar : `${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/storage/${agent.user.avatar}`)
     : portraits[agent.id % portraits.length];
   
   return (

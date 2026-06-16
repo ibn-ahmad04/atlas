@@ -78,7 +78,7 @@ export default function Header() {
           <Link to="/settings" className="flex items-center gap-2 group" title="Mon espace">
             <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center font-display font-bold text-sm shadow-sm backdrop-blur-md overflow-hidden group-hover:border-ak-accent transition-colors">
               {user?.avatar ? (
-                <img src={`http://localhost:8000/storage/${user.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
+                <img src={`${import.meta.env.VITE_API_URL.replace('/api/v1', '')}/storage/${user.avatar}`} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 user?.name?.charAt(0) || "U"
               )}
