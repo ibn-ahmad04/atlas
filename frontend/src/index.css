@@ -1,1 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --color-ak-dark: #09090b;
+  --color-ak-dark-secondary: #18181b;
+  --color-ak-light: #ffffff;
+  --color-ak-light-secondary: #f4f4f5;
+  --color-ak-border: rgba(255, 255, 255, 0.2);
+  --color-ak-border-dark: rgba(255, 255, 255, 0.3);
+  
+  --color-ak-accent: #ff9666; /* Bright orange from the image */
+  --color-ak-accent-glow: rgba(255, 150, 102, 0.5);
+
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Outfit", sans-serif;
+  
+  --shadow-ak: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --shadow-ak-hover: 0 12px 48px rgba(0, 0, 0, 0.25);
+  --shadow-ak-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+@layer base {
+  body {
+    background-color: #071913; /* Deep emerald base */
+    color: white;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    /* Effet eau / océan profond et dynamique avec des gradients radiaux pour faire les bulles */
+    background: 
+      radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 50px),
+      radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 40px),
+      radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 60px),
+      radial-gradient(circle at 20% 20%, rgba(255, 150, 102, 0.05) 0%, rgba(255, 255, 255, 0) 70px),
+      radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, rgba(255, 255, 255, 0) 80px),
+      linear-gradient(170deg, #071913 0%, #0a2e20 30%, #04121a 70%, #0a2e20 100%);
+    background-size: 150% 150%, 120% 120%, 180% 180%, 200% 200%, 140% 140%, 100% 100%;
+    z-index: -2;
+    animation: fluidBubbles 20s infinite alternate ease-in-out;
+    pointer-events: none;
+    filter: blur(8px);
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    /* Overlay pour la texture et la lumière */
+    background: 
+      radial-gradient(circle at 50% 0%, rgba(255, 150, 102, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 0% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+    z-index: -1;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    color: white;
+  }
+}
+
+@keyframes fluidBubbles {
+  0% {
+    background-position: 
+      0% 100%,
+      100% 100%,
+      50% 100%,
+      0% 0%,
+      100% 0%,
+      0% 0%;
+  }
+  50% {
+    background-position: 
+      20% 50%,
+      80% 60%,
+      40% 40%,
+      10% 20%,
+      90% 80%,
+      50% 50%;
+  }
+  100% {
+    background-position: 
+      50% 0%,
+      20% 0%,
+      80% 0%,
+      100% 100%,
+      0% 100%,
+      100% 100%;
+  }
+}
+
+@layer components {
+  .btn-ak {
+    @apply bg-ak-accent text-gray-900 px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 shadow-ak hover:shadow-ak-hover hover:-translate-y-0.5 active:translate-y-0 active:scale-95;
+  }
+  
+  .btn-ak-outline {
+    @apply border border-white/30 bg-white/10 backdrop-blur-md text-white px-6 py-2.5 rounded-full font-bold text-sm transition-all duration-300 hover:bg-white/20 active:scale-95 shadow-sm;
+  }
+  
+  .card-ak {
+    @apply bg-white/10 backdrop-blur-xl rounded-3xl shadow-ak border border-white/20 transition-all duration-300 text-white;
+  }
+
+  .glass-header {
+    @apply bg-white/80 backdrop-blur-xl border border-white/40 shadow-ak-glass rounded-full text-ak-dark;
+  }
+}
