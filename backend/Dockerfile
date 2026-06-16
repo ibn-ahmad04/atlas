@@ -15,8 +15,9 @@ RUN apt-get update && apt-get install -y \
 # Installer les extensions PHP requises par Laravel
 RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd
 
-# Activer le mod_rewrite d'Apache
+# Activer le mod_rewrite d'Apache et autoriser .htaccess (AllowOverride All)
 RUN a2enmod rewrite
+RUN echo "<Directory /var/www/>\n\tAllowOverride All\n</Directory>" >> /etc/apache2/apache2.conf
 
 # Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
