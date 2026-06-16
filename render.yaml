@@ -18,13 +18,13 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        generateValue: true
+        value: base64:ZpH0r0X2UIXpOYW7PBUG82h0G4KxV4XnrbELmNkSchI=
       - key: APP_URL
         value: https://atlas-backend.onrender.com
       - key: FRONTEND_URL
         value: https://atlas-frontend-url-here.vercel.app # Replace later
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
         fromDatabase:
           name: atlas-db
