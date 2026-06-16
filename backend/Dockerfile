@@ -27,18 +27,21 @@ WORKDIR /var/www/html
 COPY . .
 
 # Installer les dépendances Laravel
+ENV COMPOSER_MEMORY_LIMIT=-1
 RUN composer install --no-dev --optimize-autoloader
 
-# Modifier la configuration Apache pour pointer vers public/
+# Modifier la configuration Apache pour pointer vers public/ et écouter le $PORT de Render
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
 
 # Permissions pour Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Rendre le script de démarrage exécutable
+# Rendre le script de démarrage exécutable et forcer les retours à la ligne Unix
 COPY start.sh /usr/local/bin/start.sh
+RUN apt-get install -y dos2unix && dos2unix /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
 CMD ["/usr/local/bin/start.sh"]
