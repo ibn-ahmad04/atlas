@@ -22,7 +22,7 @@ services:
       - key: APP_URL
         value: https://atlas-backend.onrender.com
       - key: FRONTEND_URL
-        value: https://atlas-frontend-url-here.vercel.app # Replace later
+        value: https://atlas-beryl-two.vercel.app
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
