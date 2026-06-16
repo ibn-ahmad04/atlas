@@ -7,8 +7,6 @@ import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 
-const DAYS = ["LUN", "MAR", "MER", "JEU", "VEN", "SAM", "DIM"];
-const AVAILABILITY = [true, true, true, false, true, false, false];
 
 export default function AgentProfilePage() {
   const { id } = useParams();
@@ -33,7 +31,6 @@ export default function AgentProfilePage() {
 
   // Booking state
   const [bookingDate, setBookingDate] = useState("");
-  const [duration, setDuration] = useState(1);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingMsg, setBookingMsg] = useState("");
 
@@ -59,20 +56,18 @@ export default function AgentProfilePage() {
 
   const handleBooking = async () => {
     if (!bookingDate) {
-      setBookingMsg("Veuillez choisir une date de début.");
+      setBookingMsg("error: Veuillez choisir un créneau.");
       return;
     }
     setBookingLoading(true);
     setBookingMsg("");
     try {
-      const slotStart = new Date(bookingDate);
-      const slotEnd = new Date(slotStart);
-      slotEnd.setDate(slotEnd.getDate() + parseInt(duration, 10));
+      const slot = agent.availabilities.find(a => a.id == bookingDate);
       
       await api.post("/bookings", {
         agent_profile_id: id,
-        slot_start: slotStart.toISOString().slice(0, 19).replace("T", " "),
-        slot_end: slotEnd.toISOString().slice(0, 19).replace("T", " ")
+        slot_start: slot.start_date,
+        slot_end: slot.end_date
       });
       setBookingMsg("success: Demande de réservation envoyée !");
     } catch (err) {
@@ -291,18 +286,22 @@ export default function AgentProfilePage() {
             {/* Availability */}
             <div className="card-ak p-6 md:p-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-white/10 pb-4">
-                <h2 className="text-xl font-display font-bold text-white">Disponibilité type</h2>
+                <h2 className="text-xl font-display font-bold text-white">Disponibilités à venir</h2>
                 <span className="text-xs font-bold text-white/50 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">Fuseau : Paris (CET)</span>
               </div>
-              <div className="grid grid-cols-7 gap-2 md:gap-3">
-                {DAYS.map((day, i) => (
-                  <div key={day} className="flex flex-col items-center gap-3">
-                    <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest">{day}</span>
-                    <div className={`w-full h-12 md:h-14 rounded-xl flex items-center justify-center border transition-colors ${AVAILABILITY[i] ? "bg-emerald-50 border-emerald-100" : "bg-white/5 border-white/10"}`}>
-                      <span className={`w-2 h-2 rounded-full ${AVAILABILITY[i] ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-gray-300"}`} />
+              <div className="flex flex-wrap gap-3">
+                {agent.availabilities?.filter(a => a.status === 'disponible').length > 0 ? (
+                  agent.availabilities.filter(a => a.status === 'disponible').map(slot => (
+                    <div key={slot.id} className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col items-center justify-center min-w-[120px]">
+                      <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-1">Disponible</span>
+                      <span className="text-sm text-emerald-400 font-bold">{new Date(slot.start_date).toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'})}</span>
+                      <span className="text-xs text-white/50 my-0.5">au</span>
+                      <span className="text-sm text-emerald-400 font-bold">{new Date(slot.end_date).toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'})}</span>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <span className="text-white/50 text-sm italic">Aucune disponibilité renseignée.</span>
+                )}
               </div>
             </div>
 
@@ -450,26 +449,20 @@ export default function AgentProfilePage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] font-bold text-white/70 uppercase tracking-widest mb-2">Début</label>
-                        <input 
-                          type="datetime-local" 
-                          value={bookingDate}
-                          onChange={(e) => setBookingDate(e.target.value)}
-                          className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-3 text-sm font-medium focus:outline-none focus:border-white focus:ring-1 focus:ring-ak-dark transition-all shadow-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-white/70 uppercase tracking-widest mb-2">Durée (jours)</label>
-                        <input 
-                          type="number" 
-                          min="1"
-                          value={duration}
-                          onChange={(e) => setDuration(e.target.value)}
-                          className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-white focus:ring-1 focus:ring-ak-dark transition-all shadow-sm"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-white/70 uppercase tracking-widest mb-2">Créneau disponible</label>
+                      <select 
+                        value={bookingDate}
+                        onChange={(e) => setBookingDate(e.target.value)}
+                        className="w-full bg-white/10 border border-white/20 rounded-xl px-3 py-3 text-sm font-medium text-white focus:outline-none focus:border-white focus:ring-1 focus:ring-ak-dark transition-all shadow-sm"
+                      >
+                        <option value="" className="bg-gray-900">Sélectionnez un créneau</option>
+                        {agent.availabilities?.filter(a => a.status === 'disponible').map(slot => (
+                          <option key={slot.id} value={slot.id} className="bg-gray-900">
+                            Du {new Date(slot.start_date).toLocaleDateString('fr-FR')} au {new Date(slot.end_date).toLocaleDateString('fr-FR')}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     
                     {bookingMsg && (
