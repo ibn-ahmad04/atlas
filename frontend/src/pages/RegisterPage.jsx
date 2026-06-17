@@ -32,14 +32,18 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      await register(form);
-      navigate("/login", { state: { message: "Inscription réussie. Veuillez vous connecter." } });
-    } catch (err) {
-      if (err.response?.status === 422) {
-        setErrors(err.response.data.errors);
+      const res = await register(form);
+      if (res.success) {
+        navigate("/login", { state: { message: "Inscription réussie. Veuillez vous connecter." } });
       } else {
-        setErrors({ global: "Une erreur est survenue lors de l'inscription." });
+        if (res.errors && Object.keys(res.errors).length > 0) {
+          setErrors(res.errors);
+        } else {
+          setErrors({ global: res.message });
+        }
       }
+    } catch (err) {
+      setErrors({ global: "Une erreur inattendue est survenue." });
     } finally {
       setLoading(false);
     }
